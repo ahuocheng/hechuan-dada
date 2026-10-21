@@ -109,6 +109,22 @@ body.ready .title span{animation:letter 1.2s calc(.25s + var(--i) * .11s) var(--
 @keyframes sweep{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
 .btn-primary:hover{box-shadow:0 24px 60px -12px rgba(244,123,58,1),inset 0 1px 0 rgba(255,255,255,.5)}
 .btn-primary small{font-weight:500;font-size:12.5px;opacity:.7;padding-left:12px;border-left:1px solid rgba(26,15,8,.25)}
+/* 下载按钮：左边网盘（主），右边 GitHub（备用） */
+.btn-split{position:relative;display:inline-flex;height:58px;border-radius:18px;overflow:hidden;isolation:isolate;color:#1a0f08;
+  background:linear-gradient(135deg,#ffc98f,var(--or) 60%,#e8642a);box-shadow:0 18px 50px -14px rgba(244,123,58,.85),inset 0 1px 0 rgba(255,255,255,.45);
+  transition:transform .35s var(--ease),box-shadow .35s}
+.btn-split::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.65) 48%,transparent 66%);transform:translateX(-120%);animation:sweep 3.6s 1.8s ease-in-out infinite}
+.btn-split:hover{box-shadow:0 24px 60px -12px rgba(244,123,58,1),inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-split a{display:flex;align-items:center;white-space:nowrap;transition:background .3s}
+.bs-main{gap:10px;padding:0 28px 0 26px;font-size:18px;font-weight:700}
+.bs-main svg{width:20px;height:20px;flex:none}
+.bs-main small{font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;background:rgba(26,15,8,.14)}
+.bs-main:hover{background:rgba(255,255,255,.16)}
+.bs-alt{flex-direction:column;justify-content:center;padding:0 18px;font-size:13.5px;font-weight:600;line-height:1.3;border-left:1px solid rgba(26,15,8,.22);background:rgba(26,15,8,.1)}
+.bs-alt small{font-size:11px;font-weight:500;opacity:.65}
+.bs-alt:hover{background:rgba(26,15,8,.03)}
+.btn-split.full{display:flex;width:100%}
+.btn-split.full .bs-main{flex:1;justify-content:center;padding:0 16px}
 .btn-ghost{color:var(--ink);border:1px solid var(--line2);background:rgba(255,244,230,.04);backdrop-filter:blur(10px)}
 .btn-ghost:hover{background:rgba(255,244,230,.09)}
 .btn-ghost .pl{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg)}
@@ -629,6 +645,10 @@ footer nav a:hover{color:var(--ink2)}
   .hero-icon{width:88px;height:88px;border-radius:22px;margin-top:26px}
   .btn{height:54px;padding:0 22px;font-size:16px}
   .btn-primary small{display:none}
+  .btn-split{height:54px}
+  .bs-main{padding:0 18px;font-size:16.5px}
+  .bs-main small{display:none}
+  .bs-alt{padding:0 14px;font-size:13px}
   .stage{margin-top:50px}
   .stats{grid-template-columns:1fr 1fr}
   .stat:nth-child(3){border-left:0}
@@ -684,6 +704,7 @@ footer nav a:hover{color:var(--ink2)}
   <symbol id="i-phone" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 5.5h3M11 18.5h2"/></g></symbol>
   <symbol id="i-android" viewBox="0 0 24 24"><path fill="currentColor" d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-2.86-1.21-6.08-1.21-8.94 0L5.65 5.67c-.19-.29-.58-.38-.87-.2-.28.18-.37.54-.22.83L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></symbol>
   <symbol id="i-dl" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 5-5m-5 5-5-5M4 19h16"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path fill="currentColor" d="M13.2 2.5 4.6 13.2a.8.8 0 0 0 .6 1.3h5.4l-1.3 7a.5.5 0 0 0 .9.4l8.6-10.7a.8.8 0 0 0-.6-1.3h-5.4l1.3-7a.5.5 0 0 0-.9-.4z"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
@@ -711,7 +732,10 @@ footer nav a:hover{color:var(--ink2)}
     <h1 class="title" aria-label="河传答哒"><span style="--i:0">河</span><span style="--i:1">传</span><span style="--i:2">答</span><span style="--i:3">哒</span></h1>
     <p class="slogan hero-fade" style="--d:0">河北传媒学院同学的桌面助手<br>课表、日程、录课、作业 —— <em>一个地方，全都管好</em></p>
     <div class="cta hero-fade" style="--d:1">
-      <a class="btn btn-primary mag" data-dl="windows" href="#download"><svg><use href="#i-win"/></svg>下载 Windows 版<small>免费</small></a>
+      <div class="btn-split mag">
+        <a class="bs-main" data-dl="pan" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载<small>Windows 版</small></a>
+        <a class="bs-alt" data-dl="windows" href="#download">GitHub 下载<small>备用线路</small></a>
+      </div>
       <a class="btn btn-ghost mag" href="#film"><span class="pl"><svg><use href="#i-play"/></svg></span>看 32 秒宣传片</a>
     </div>
     <p class="meta hero-fade" style="--d:2">Windows 10 / 11<i></i>64 位<i></i>装上就能用 AI</p>
@@ -1046,7 +1070,10 @@ footer nav a:hover{color:var(--ink2)}
           <li><svg><use href="#i-check"/></svg>开机自启、托盘常驻、到点通知</li>
         </ul>
         <div class="go">
-          <a class="btn btn-primary mag" data-dl="windows" href="#download"><svg><use href="#i-dl"/></svg>立即下载</a>
+          <div class="btn-split full">
+            <a class="bs-main" data-dl="pan" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载</a>
+            <a class="bs-alt" data-dl="windows" href="#download">GitHub<small>备用线路</small></a>
+          </div>
           <div class="ver">版本 1.3.1 · 安装包 .exe · 约 262 MB</div>
         </div>
       </div>
@@ -1079,7 +1106,10 @@ footer nav a:hover{color:var(--ink2)}
   <div class="wrap">
     <h2 class="h2" data-r>让大学生活，<br><span class="gr">井井有条</span></h2>
     <div class="cta" data-r style="--d:1">
-      <a class="btn btn-primary mag" data-dl="windows" href="#download"><svg><use href="#i-win"/></svg>下载 Windows 版<small>v1.3.1</small></a>
+      <div class="btn-split mag">
+        <a class="bs-main" data-dl="pan" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载<small>v1.3.1</small></a>
+        <a class="bs-alt" data-dl="windows" href="#download">GitHub 下载<small>备用线路</small></a>
+      </div>
     </div>
   </div>
 </section>
@@ -1097,7 +1127,8 @@ footer nav a:hover{color:var(--ink2)}
    下载链接：拿到链接后填进引号里即可（留空时点击会提示"马上就来"）
    ================================================================ */
 const DOWNLOAD = {
-  windows: 'https://github.com/ahuocheng/hechuan-dada/releases/download/v1.3.1/campus-assistant-setup-1.3.1.exe'
+  pan: 'https://1833332470.share.123pan.cn/123pan/CsXhTd-wHPmd',  // 网盘高速下载（123 云盘）
+  windows: 'https://github.com/ahuocheng/hechuan-dada/releases/download/v1.3.1/campus-assistant-setup-1.3.1.exe'  // GitHub 备用线路
 };
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -1120,8 +1151,10 @@ function toast(msg) {
 $$('[data-dl]').forEach(a => {
   const url = DOWNLOAD[a.dataset.dl];
   if (url) a.href = url;
+  // 网盘是分享页，新标签页打开；GitHub 是直接下载
+  if (url && a.dataset.dl === 'pan') { a.target = '_blank'; a.rel = 'noopener'; }
   a.addEventListener('click', e => {
-    if (DOWNLOAD[a.dataset.dl]) { toast('开始下载河传答哒 Windows 版…'); return; }
+    if (DOWNLOAD[a.dataset.dl]) { toast(a.dataset.dl === 'pan' ? '正在打开 123 云盘…' : '开始下载河传答哒 Windows 版…'); return; }
     // 还没有链接：首屏按钮滚到下载区，下载区按钮给提示
     if (a.closest('#download')) { e.preventDefault(); toast('下载链接马上就来，稍后再试一下～'); }
   });
