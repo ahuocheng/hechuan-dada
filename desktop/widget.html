@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>河传答哒 小组件</title>
+<link rel="stylesheet" href="fonts/noto-serif-sc/500.css">
+<link rel="stylesheet" href="widget-kit.css">
+<style>
+/* 桌面上的一个小组件：透明无边框窗口里一张卡片，画法在 widget-kit.js（和软件里的预览共用）。
+   窗口大小跟着卡片走（量好了告诉主进程）；样子在软件的「桌面小组件」页面里改 */
+html,body{margin:0;background:transparent;overflow:hidden}
+#wrap{padding:16px;display:inline-block}
+#card.drag{cursor:grabbing}
+#card.flash{animation:flash .9s ease}
+@keyframes flash{0%,100%{transform:none;box-shadow:var(--sh)}30%{transform:scale(1.04);box-shadow:0 0 0 4px var(--acc),var(--sh)}60%{transform:scale(.99)}}
+
+/* 右上角的小按钮：鼠标放上来才出现 */
+.tools{position:absolute;top:10px;right:10px;display:flex;gap:2px;opacity:0;transition:opacity .2s;z-index:2;background:rgba(var(--base),.92);border-radius:9px;padding:1px}
+#wrap:hover .tools{opacity:1}
+.tools button{all:unset;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;color:var(--muted);cursor:pointer}
+.tools button:hover{background:var(--soft);color:var(--text)}
+.tools button.on{color:var(--acc)}
+svg.i{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="card"></div></div>
+<script src="widget-kit.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const card = $('#card'), wrap = $('#wrap');
+const TOOLS = `<div class="tools">
+  <button data-t="edit" title="调整样子（在软件里）"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg></button>
+  <button data-t="lock" title="锁定位置"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
+  <button data-t="remove" title="从桌面上拿掉"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>`;
+
+let cfg = null, D = null, appTheme = 'light', lastMin = '';
+
+function render() {
+  lastMin = WK.nowHM();
+  WK.apply(card, D, cfg, appTheme, true);
+  card.insertAdjacentHTML('afterbegin', TOOLS);
+  const lock = card.querySelector('[data-t=lock]');
+  lock.classList.toggle('on', !!cfg.locked);
+  lock.title = cfg.locked ? '已锁定位置，点一下解锁' : '锁定位置';
+  card.querySelectorAll('[data-open]').forEach(el => el.onclick = e => {
+    if (e.target.closest('[data-done]')) return;
+    const [kind, id] = el.dataset.open.split(':');
+    window.widget.open({ kind, id });
+  });
+  card.querySelectorAll('[data-done]').forEach(el => el.onclick = async e => {
+    e.stopPropagation();
+    el.closest('.wk-row').classList.add('done', 'leaving');
+    await window.widget.toggleDone(el.dataset.done);
+  });
+  fit();
+}
+// 窗口大小跟着卡片走
+function fit() { requestAnimationFrame(() => window.widget.resize({ w: Math.ceil(wrap.getBoundingClientRect().width), h: Math.ceil(wrap.getBoundingClientRect().height) })); }
+async function load() {
+  try { D = await window.widget.data(); } catch (e) {}
+  if (cfg) render();
+}
+// 钟每几秒走一下；跨分钟时整体重画（倒计时、进行中这些都跟着变）；每分钟重新拿一次数据
+setInterval(() => {
+  const hm = WK.nowHM();
+  card.querySelectorAll('[data-clock]').forEach(c => c.textContent = hm);
+  if (cfg && hm !== lastMin) render();
+}, 5000);
+setInterval(load, 60e3);
+window.widget.onRefresh(load);
+window.widget.onConfig(c => { cfg = c; render(); });
+window.widget.onTheme(t => { appTheme = t; if (cfg) render(); });
+window.widget.onFlash(() => { card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash'); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => cfg && render());
+
+card.addEventListener('click', e => {
+  const b = e.target.closest('.tools button');
+  if (!b) return;
+  if (b.dataset.t === 'edit') window.widget.edit();
+  else if (b.dataset.t === 'lock') { cfg.locked = !cfg.locked; window.widget.setConfig({ locked: cfg.locked }); render(); }
+  else if (b.dataset.t === 'remove') window.widget.remove();
+});
+
+/* ---------- 按住拖动（锁定了、或者点在按钮、可以点的条目上就不拖） ---------- */
+let down = null;
+card.addEventListener('pointerdown', e => {
+  if (e.button !== 0 || !cfg || cfg.locked || e.target.closest('button,[data-done],[data-open]')) return;
+  down = { x: e.screenX, y: e.screenY, moved: false };
+  card.setPointerCapture(e.pointerId);
+});
+card.addEventListener('pointermove', e => {
+  if (!down || down.moved) return;
+  if (Math.abs(e.screenX - down.x) + Math.abs(e.screenY - down.y) < 4) return;
+  down.moved = true;
+  card.classList.add('drag');
+  window.widget.dragStart();
+});
+card.addEventListener('pointerup', () => {
+  if (!down) return;
+  if (down.moved) { card.classList.remove('drag'); window.widget.dragEnd(); }
+  down = null;
+});
+
+(async () => {
+  const r = await window.widget.getConfig();
+  if (!r) return;
+  cfg = r.cfg; appTheme = r.theme;
+  render();
+  load();
+})();
+</script>
+</body>
+</html>

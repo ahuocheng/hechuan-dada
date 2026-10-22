@@ -1,0 +1,132 @@
+/* 桌面小组件的样子：桌面上的小组件窗口和软件里「桌面小组件」页面的预览共用这一份。
+   类名都带 wk- 前缀，放进软件页面里也不会和别的样式打架。主题、强调色、透明度由 JS 写在 .wk 元素上 */
+.wk{
+  --a:.94; --acc:#c6613f; --acc-soft:rgba(198,97,63,.12);
+  --c-course:#4e6e93; --c-task:#c6613f; --c-event:#5a8060; --c-other:#86689f; --hot:#c8462f;
+  --wk-serif:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  position:relative;box-sizing:border-box;border-radius:22px;padding:18px 18px 14px;
+  background:rgba(var(--base),var(--a));border:1px solid var(--edge);box-shadow:var(--sh);color:var(--text);
+  font:13px/1.5 "PingFang SC","Microsoft YaHei UI","Microsoft YaHei",system-ui,sans-serif;text-align:left;user-select:none;transition:background .3s
+}
+.wk *{box-sizing:border-box}
+.wk[data-t=light]{--base:251,250,247;--text:#1f1e1b;--sub:#625e56;--muted:#9a968c;--line:rgba(31,30,27,.08);--edge:rgba(31,30,27,.08);--soft:rgba(31,30,27,.05);--sh:0 1px 2px rgba(40,35,20,.06),0 12px 32px rgba(40,35,20,.14)}
+.wk[data-t=dark]{--base:38,38,36;--text:#f0eee6;--sub:#c2bfb4;--muted:#8b887f;--line:rgba(255,255,255,.08);--edge:rgba(255,255,255,.07);--soft:rgba(255,255,255,.06);--sh:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.35);
+  --c-course:#8aa7c9;--c-task:#e08a6b;--c-event:#8db592;--c-other:#b49bce;--hot:#ef7a62}
+.wk[data-t=glass]{--base:255,255,255;--text:#1b1a17;--sub:#4b4841;--muted:#6f6b62;--line:rgba(0,0,0,.08);--edge:rgba(255,255,255,.75);--soft:rgba(255,255,255,.45);--sh:0 1px 1px rgba(0,0,0,.05),0 16px 40px rgba(0,0,0,.18)}
+.wk[data-t=glassdark]{--base:18,18,20;--text:#f4f2ec;--sub:#d2cfc6;--muted:#a19e95;--line:rgba(255,255,255,.1);--edge:rgba(255,255,255,.14);--soft:rgba(255,255,255,.08);--sh:0 16px 40px rgba(0,0,0,.35);
+  --c-course:#9fbbe0;--c-task:#f09a7b;--c-event:#9ccaa2;--c-other:#c6afe0;--hot:#ff8a70}
+.wk[data-t^=glass]{background-image:linear-gradient(160deg,rgba(255,255,255,.18),rgba(255,255,255,0) 45%)}
+
+/* 通用零件 */
+.wk-mod+.wk-mod{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.wk-lab{display:flex;align-items:baseline;justify-content:space-between;font-size:11px;letter-spacing:.06em;color:var(--muted);margin-bottom:7px}
+.wk-lab b{font-weight:500;color:var(--acc);letter-spacing:0}
+.wk-empty{font-size:12.5px;color:var(--muted)}
+.wk-pill{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--acc-soft);color:var(--acc);white-space:nowrap}
+.wk-serif{font-family:var(--wk-serif);font-weight:500}
+.wk-dot{width:6px;height:6px;border-radius:50%;flex:none}
+.wk-c-course{background:var(--c-course)}.wk-c-task{background:var(--c-task)}.wk-c-event{background:var(--c-event)}.wk-c-other{background:var(--c-other)}
+
+/* 时间日期 */
+.wk-c-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--sub)}
+.wk-time{font:500 46px/1.05 var(--wk-serif);letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin-top:6px}
+.wk-c-sub{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);margin-top:6px}
+/* 时钟（单独一种）：居中的大字 */
+.wk-clock{text-align:center;padding:6px 0 2px}
+.wk-clock .wk-time{font-size:66px;margin:0}
+.wk-clock .wk-date{font-size:14px;color:var(--sub);margin-top:4px}
+.wk-clock .wk-chips{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.wk-clock .wk-chips span{font-size:11.5px;padding:2px 10px;border-radius:99px;background:var(--soft);color:var(--sub)}
+.wk-clock .wk-chips span.on{background:var(--acc-soft);color:var(--acc)}
+
+/* 下一节课 */
+.wk-nx{display:flex;gap:10px;align-items:stretch}
+.wk-nx .wk-bar{width:3px;border-radius:2px;background:var(--acc);flex:none}
+.wk-nx .wk-bd{flex:1;min-width:0}
+.wk-nx-t{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-nx-m{font-size:12px;color:var(--sub)}
+.wk-nx-r{text-align:right;flex:none;align-self:center}
+.wk-nx-r .wk-n{font:500 24px/1 var(--wk-serif);color:var(--acc);font-variant-numeric:tabular-nums}
+.wk-nx-r .wk-u{font-size:11px;color:var(--muted)}
+.wk-prog{height:3px;border-radius:2px;background:var(--soft);margin-top:9px;overflow:hidden}
+.wk-prog i{display:block;height:100%;background:var(--acc);border-radius:2px}
+.wk-next .wk-nx-t{font-size:19px}
+.wk-next .wk-nx-r .wk-n{font-size:34px}
+
+/* 列表 */
+.wk-row{display:flex;align-items:center;gap:9px;padding:4px 6px;margin:0 -6px;border-radius:8px;font-size:13px;min-width:0}
+.wk-live .wk-row[data-open],.wk-live .wk-row [data-open]{cursor:pointer}
+.wk-live .wk-row:hover{background:var(--soft)}
+.wk-row .wk-tm{width:38px;flex:none;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.wk-row .wk-tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-row.past{opacity:.45}
+.wk-row.now .wk-tt{font-weight:600}
+.wk-tag{font-size:10.5px;padding:0 6px;border-radius:99px;background:var(--acc-soft);color:var(--acc);flex:none}
+.wk-more{font-size:11.5px;color:var(--muted);padding:2px 0 0 47px}
+.wk-ck{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--muted);flex:none;display:grid;place-items:center;transition:.15s}
+.wk-live .wk-ck{cursor:pointer}
+.wk-live .wk-ck:hover{border-color:var(--acc)}
+.wk-row.done .wk-ck{background:var(--acc);border-color:var(--acc)}
+.wk-row.done .wk-ck::after{content:'';width:6px;height:3px;border:solid #fff;border-width:0 0 1.6px 1.6px;transform:rotate(-45deg) translate(0,-1px)}
+.wk-row.done .wk-tt{text-decoration:line-through;opacity:.5}
+.wk-row.leaving{animation:wk-out .35s ease .25s forwards}
+@keyframes wk-out{to{opacity:0;height:0;padding:0;margin-top:-2px}}
+.wk-due{font-size:11.5px;color:var(--muted);flex:none;font-variant-numeric:tabular-nums}
+.wk-due.hot{color:var(--hot)}
+
+/* 本周（一条） */
+/* minmax(0,1fr)：七列一样宽，课名太长就省略，不把列撑开 */
+.wk-wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));text-align:center}
+.wk-wk-d{font-size:10.5px;color:var(--muted)}
+.wk-wk-n{font:500 14px/1 var(--wk-serif);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;margin:4px auto 3px}
+.wk-wk .today .wk-wk-n{background:var(--acc);color:#fff}
+.wk-wk .past .wk-wk-n{color:var(--muted)}
+.wk-wk-dots{display:flex;gap:2px;justify-content:center;height:4px}
+.wk-wk-dots i{width:4px;height:4px;border-radius:50%}
+/* 本周课表（单独一种）：每天一列，列出那天的课 */
+.wk-week .wk-wk-n{margin-bottom:6px}
+.wk-wcol{display:flex;flex-direction:column;gap:3px;padding:0 1px}
+.wk-wcol span{font-size:10.5px;line-height:1.25;padding:3px 3px 3px 5px;border-radius:5px;text-align:left;background:var(--soft);border-left:2px solid var(--c-course);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.wk-wcol span.t-task{border-left-color:var(--c-task)}.wk-wcol span.t-event{border-left-color:var(--c-event)}.wk-wcol span.t-other{border-left-color:var(--c-other)}
+.wk-wcol small{font-size:10px;color:var(--muted)}
+.wk-week .today .wk-wcol span{background:var(--acc-soft)}
+
+/* 学期进度 */
+.wk-tm-bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden;margin:2px 0 6px}
+.wk-tm-bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc),color-mix(in srgb,var(--acc) 55%,#fff))}
+.wk-tm-txt{display:flex;justify-content:space-between;font-size:12px;color:var(--sub)}
+.wk-tm-txt b{font:500 16px var(--wk-serif);color:var(--text)}
+.wk-ring{display:flex;align-items:center;gap:16px}
+.wk-ring-w{position:relative;width:108px;height:108px;flex:none}
+.wk-ring svg{width:108px;height:108px;transform:rotate(-90deg)}
+.wk-ring circle{fill:none;stroke-width:9;stroke-linecap:round}
+.wk-ring .bg{stroke:var(--soft)}
+.wk-ring .fg{stroke:var(--acc)}
+.wk-ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.wk-ring-c b{display:block;font:500 26px/1.1 var(--wk-serif)}
+.wk-ring-c small{font-size:11px;color:var(--muted)}
+.wk-ring-r{font-size:13px;color:var(--sub);line-height:1.8}
+.wk-ring-r b{font:500 18px var(--wk-serif);color:var(--text)}
+
+/* 倒计时 */
+.wk-cd{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.wk-cd-n{font:500 40px/1 var(--wk-serif);color:var(--acc);font-variant-numeric:tabular-nums}
+.wk-cd-n small{font:13px "Microsoft YaHei UI",sans-serif;color:var(--sub);margin-left:4px}
+.wk-cd-r{text-align:right;min-width:0}
+.wk-cd-t{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-cd-d{font-size:12px;color:var(--muted)}
+.wk-count{text-align:center;padding:4px 0}
+.wk-count .wk-cd-n{font-size:72px;line-height:1}
+.wk-count .wk-cd-n small{font-size:16px}
+.wk-count .wk-cd-t{font-size:16px;margin-top:10px}
+
+/* 月历 */
+.wk-mt{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.wk-mt b{font:500 17px var(--wk-serif)}
+.wk-mg{display:grid;grid-template-columns:repeat(7,1fr);row-gap:4px;text-align:center}
+.wk-mg .h{font-size:10.5px;color:var(--muted);padding-bottom:2px}
+.wk-mg .d{position:relative;height:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-variant-numeric:tabular-nums}
+.wk-mg .d.out{color:var(--muted);opacity:.5}
+.wk-mg .d.today span{width:24px;height:24px;line-height:24px;border-radius:50%;background:var(--acc);color:#fff;font-weight:600}
+.wk-mg .d i{display:flex;gap:2px;height:4px;margin-top:1px}
+.wk-mg .d i b{width:4px;height:4px;border-radius:50%}
