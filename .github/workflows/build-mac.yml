@@ -1,0 +1,137 @@
+name: Build macOS
+
+# 打 Mac 版：Apple 芯片（arm64）和 Intel（x64）各一个 dmg。
+# - 推到任何分支：只构建、自检，dmg 放在这次运行的 Artifacts 里
+# - 推到 main，或者手动运行时填了 Release 的 tag：再把 dmg 传到那个 Release（main 上默认传到 v<package.json 版本>）
+on:
+  push:
+    branches: ['**']
+    paths: ['desktop/**', '.github/workflows/build-mac.yml']
+  workflow_dispatch:
+    inputs:
+      release:
+        description: '上传到哪个 Release（填 tag，例如 v1.3.1；留空只构建不上传）'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  models:
+    name: 准备语音识别模型
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: desktop/models
+          key: models-${{ hashFiles('desktop/scripts/fetch-models.sh') }}
+      - run: bash desktop/scripts/fetch-models.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: models
+          path: desktop/models
+          retention-days: 1
+          compression-level: 0
+
+  build:
+    name: macOS ${{ matrix.arch }}
+    needs: models
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            os: macos-15
+          - arch: x64
+            os: macos-15-intel
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - uses: actions/download-artifact@v4
+        with:
+          name: models
+          path: desktop/models
+      - run: npm ci
+      - name: 打包
+        run: npx electron-builder --mac dmg --${{ matrix.arch }} --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: 自检：签名、架构
+        run: |
+          APP="$(ls -d dist/mac*/*.app)"
+          echo "APP=$APP" >> "$GITHUB_ENV"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          RES="$APP/Contents/Resources"
+          for f in "$APP/Contents/MacOS/"* "$RES/app.asar.unpacked/node_modules/ffmpeg-static/ffmpeg" "$RES"/app.asar.unpacked/node_modules/sherpa-onnx-darwin-*/sherpa-onnx.node; do
+            lipo -archs "$f" | tee /dev/stderr | grep -qw "$(echo ${{ matrix.arch }} | sed s/x64/x86_64/)"
+          done
+          test -f "$RES/models/sensevoice/model.int8.onnx"
+          plutil -p "$APP/Contents/Info.plist" | grep -E 'NSMicrophoneUsageDescription|CFBundleIdentifier|LSMinimumSystemVersion'
+
+      - name: 自检：本地语音识别（打包好的 ffmpeg + 模型）
+        run: |
+          say -v Tingting -o "$RUNNER_TEMP/speech.aiff" "明天下午三点在三号教学楼上高等数学课" \
+            || say -o "$RUNNER_TEMP/speech.aiff" "The math class starts at three p.m. tomorrow"
+          ELECTRON_RUN_AS_NODE=1 "$APP/Contents/MacOS/"* scripts/smoke-asr.js "$APP/Contents/Resources" "$RUNNER_TEMP/speech.aiff"
+
+      - name: 自检：启动软件
+        run: |
+          LOG="$RUNNER_TEMP/launch.log"
+          ELECTRON_ENABLE_LOGGING=1 "$APP/Contents/MacOS/"* > "$LOG" 2>&1 &
+          PID=$!
+          sleep 25
+          screencapture -x "$RUNNER_TEMP/screen.png" || true
+          cat "$LOG"
+          kill -0 "$PID" || { echo "软件启动后退出了"; exit 1; }
+          kill "$PID" || true
+          ! grep -E "Uncaught|A JavaScript error occurred|TypeError|ReferenceError" "$LOG"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screen-${{ matrix.arch }}
+          path: ${{ runner.temp }}/screen.png
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-${{ matrix.arch }}
+          path: desktop/dist/*.dmg
+          compression-level: 0
+
+  release:
+    name: 上传到 Release
+    needs: build
+    if: (github.event_name == 'workflow_dispatch' && inputs.release != '') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mac-*
+          path: out
+          merge-multiple: true
+      - name: 上传
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release }}
+        run: |
+          TAG="${TAG:-v$(node -p "require('./desktop/package.json').version")}"
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            echo "::warning::没有找到 Release $TAG，跳过上传（dmg 在这次运行的 Artifacts 里）"
+            exit 0
+          fi
+          ls -la out
+          gh release upload "$TAG" out/*.dmg --clobber

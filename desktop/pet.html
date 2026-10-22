@@ -472,7 +472,7 @@ function showMenu() {
     '<div class="menu" style="margin-top:8px"><button data-a="clip">识别剪贴板里的文字</button><button data-a="open">打开河传答哒</button><button data-a="widget">显示 / 隐藏桌面小组件</button><button class="dim" data-a="hide">先藏起来</button></div>', 'menu');
   bubble.querySelector('[data-a=clip]').onclick = async () => {
     const t = (await window.pet.clipboard()).trim();
-    if (!t) return say('剪贴板里没有文字', '先在聊天里选中一段，按 Ctrl+C 复制，再点我。', 'sad');
+    if (!t) return say('剪贴板里没有文字', '先在聊天里选中一段，按 ' + (window.pet.platform === 'darwin' ? '⌘C' : 'Ctrl+C') + ' 复制，再点我。', 'sad');
     recognize(t);
   };
   bubble.querySelector('[data-a=open]').onclick = () => { hideBubble(); window.pet.open(); };

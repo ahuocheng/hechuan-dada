@@ -1,9 +1,15 @@
 {
   "name": "campus-assistant",
+  "productName": "河传答哒",
   "version": "1.3.1",
   "description": "河传答哒（河北传媒学院）",
   "main": "main.js",
   "author": "campus-assistant",
+  "scripts": {
+    "start": "electron .",
+    "models": "bash scripts/fetch-models.sh",
+    "dist:mac": "electron-builder --mac"
+  },
   "allowScripts": {
     "electron@33.2.0": true,
     "ffmpeg-static@5.3.0": true
@@ -11,5 +17,53 @@
   "dependencies": {
     "ffmpeg-static": "5.3.0",
     "sherpa-onnx-node": "1.13.8"
+  },
+  "devDependencies": {
+    "electron": "33.2.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "cn.student.campusassistant",
+    "productName": "河传答哒",
+    "copyright": "河传答哒",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": [
+      "**/*",
+      "build/logo.png",
+      "build/icon.ico",
+      "build/trayTemplate*.png",
+      "!dist{,/**}",
+      "!models{,/**}",
+      "!scripts{,/**}",
+      "!README.md"
+    ],
+    "extraResources": [{ "from": "models", "to": "models" }],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**",
+      "node_modules/sherpa-onnx-node/**",
+      "node_modules/sherpa-onnx-darwin-*/**"
+    ],
+    "artifactName": "campus-assistant-${version}-mac-${arch}.${ext}",
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.productivity",
+      "target": ["dmg"],
+      "identity": "-",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "minimumSystemVersion": "11.0",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "录课时需要用麦克风录音，录完在这台电脑上转成文字。",
+        "LSApplicationCategoryType": "public.app-category.productivity"
+      }
+    },
+    "dmg": {
+      "title": "河传答哒 ${version}",
+      "contents": [
+        { "x": 150, "y": 190, "type": "file" },
+        { "x": 390, "y": 190, "type": "link", "path": "/Applications" }
+      ],
+      "window": { "width": 540, "height": 380 }
+    }
   }
 }

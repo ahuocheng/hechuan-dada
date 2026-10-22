@@ -1,6 +1,8 @@
 const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 contextBridge.exposeInMainWorld('desktop', {
+  platform: process.platform,
+  micAccess: () => ipcRenderer.invoke('mic:access'),
   openJw: url => ipcRenderer.invoke('jw:open', url),
   grabTimetable: () => ipcRenderer.invoke('jw:grab'),
   jwLoginStart: () => ipcRenderer.invoke('jw:loginStart'),

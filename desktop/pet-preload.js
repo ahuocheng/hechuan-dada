@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 // 桌宠窗口只拿到自己用的这几个接口
 contextBridge.exposeInMainWorld('pet', {
+  platform: process.platform,
   dragStart: () => ipcRenderer.send('pet:dragStart'),
   dragEnd: () => ipcRenderer.send('pet:dragEnd'),
   layout: size => ipcRenderer.invoke('pet:layout', size),

@@ -560,7 +560,7 @@ section.blk{padding:150px 0 0;position:relative}
 .dl{position:relative;overflow:hidden}
 .dl::before{content:"";position:absolute;left:50%;top:180px;width:1000px;height:600px;margin-left:-500px;z-index:-1;border-radius:50%;
   background:radial-gradient(closest-side,rgba(244,123,58,.22),transparent);filter:blur(30px)}
-.dl-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:18px;margin-top:64px}
+.dl-grid{display:grid;grid-template-columns:1.4fr 1.4fr 1fr 1fr;gap:18px;margin-top:64px}
 .dc{position:relative;border-radius:28px;padding:30px 26px;display:flex;flex-direction:column;min-height:330px;background:var(--card);border:1px solid var(--line);overflow:hidden;isolation:isolate;--mx:50%;--my:0%;
   transition:transform .5s var(--ease),border-color .4s}
 .dc .pi{width:58px;height:58px;border-radius:17px;display:grid;place-items:center;background:rgba(255,244,230,.05);border:1px solid var(--line)}
@@ -608,6 +608,7 @@ section.blk{padding:150px 0 0;position:relative}
 .qa.open .ans{grid-template-rows:1fr}
 .qa .ans>div{overflow:hidden}
 .qa .ans p{padding:0 24px 22px;color:var(--muted);font-size:15px}
+.qa .ans code{font:13px ui-monospace,Menlo,Consolas,monospace;padding:1px 6px;border-radius:6px;background:rgba(255,244,230,.08);color:var(--ink2);word-break:break-all}
 .qa .ans b{color:var(--ink2);font-weight:600}
 
 /* ---------- 尾部 ---------- */
@@ -727,7 +728,7 @@ footer nav a:hover{color:var(--ink2)}
   <div class="gridbg"></div>
   <canvas id="stars"></canvas>
   <div class="wrap hero-inner">
-    <div class="badge hero-fade" style="--d:-3"><b>v1.3.1</b><span class="dot"></span>Windows 版现已上线</div>
+    <div class="badge hero-fade" style="--d:-3"><b>v1.3.1</b><span class="dot"></span>Windows / Mac 版现已上线</div>
     <img class="hero-icon" src="icon.png" alt="河传答哒图标">
     <h1 class="title" aria-label="河传答哒"><span style="--i:0">河</span><span style="--i:1">传</span><span style="--i:2">答</span><span style="--i:3">哒</span></h1>
     <p class="slogan hero-fade" style="--d:0">河北传媒学院同学的桌面助手<br>课表、日程、录课、作业 —— <em>一个地方，全都管好</em></p>
@@ -738,7 +739,7 @@ footer nav a:hover{color:var(--ink2)}
       </div>
       <a class="btn btn-ghost mag" href="#film"><span class="pl"><svg><use href="#i-play"/></svg></span>看 32 秒宣传片</a>
     </div>
-    <p class="meta hero-fade" style="--d:2">Windows 10 / 11<i></i>64 位<i></i>装上就能用 AI</p>
+    <p class="meta hero-fade" style="--d:2">Windows 10 / 11<i></i>macOS 11 及以上<i></i>装上就能用 AI</p>
   </div>
 
   <div class="stage hero-fade" id="stage" style="--d:3">
@@ -937,7 +938,7 @@ footer nav a:hover{color:var(--ink2)}
       <article class="fc" style="--c:4" data-r data-d="1">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></svg></div>
         <h3>到点就提醒</h3>
-        <p>上课、考试、截止前弹 Windows 通知；关掉窗口也在托盘里替你守着。</p>
+        <p>上课、考试、截止前弹系统通知；关掉窗口也在托盘 / 菜单栏里替你守着。</p>
         <div class="viz v-bell">
           <svg class="bl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0M12 3V2"/></svg>
           <div class="toast-demo"><img src="icon.png" alt=""><div><b>剪辑作业还有 2 小时截止</b><p>今天 22:00 · 交到学习通</p></div></div>
@@ -1056,7 +1057,7 @@ footer nav a:hover{color:var(--ink2)}
     <div class="head-c">
       <div class="eyebrow" data-r>06 · 下载</div>
       <h2 class="h2" data-r style="--d:1">选择你的设备</h2>
-      <p class="lead" data-r style="--d:2">Windows 版已经可以用了，其他平台正在路上。</p>
+      <p class="lead" data-r style="--d:2">Windows 和 Mac 版已经可以用了，手机版正在路上。</p>
     </div>
     <div class="dl-grid">
       <div class="dc win" data-r>
@@ -1077,7 +1078,24 @@ footer nav a:hover{color:var(--ink2)}
           <div class="ver">版本 1.3.1 · 安装包 .exe · 约 262 MB</div>
         </div>
       </div>
-      <div class="dc soon" data-r style="--d:1"><span class="soon-tag">开发中</span><svg class="wm"><use href="#i-apple"/></svg><div class="pi"><svg><use href="#i-apple"/></svg></div><h3>macOS</h3><p>Mac 桌面版</p><div class="go" data-soon="macOS">敬请期待</div></div>
+      <div class="dc win mac" data-r style="--d:1">
+        <span class="rec">新上线</span>
+        <div class="pi"><svg><use href="#i-apple"/></svg></div>
+        <h3>macOS</h3>
+        <p>macOS 11 及以上 · Apple 芯片 / Intel</p>
+        <ul>
+          <li><svg><use href="#i-check"/></svg>全部功能，含桌宠与桌面小组件</li>
+          <li><svg><use href="#i-check"/></svg>录课识别模型已内置，本机离线识别</li>
+          <li><svg><use href="#i-check"/></svg>开机自启、菜单栏常驻、到点通知</li>
+        </ul>
+        <div class="go">
+          <div class="btn-split full">
+            <a class="bs-main" data-dl="mac" href="#download"><svg><use href="#i-apple"/></svg>Apple 芯片</a>
+            <a class="bs-alt" data-dl="macIntel" href="#download">Intel<small>老款 Mac</small></a>
+          </div>
+          <div class="ver">版本 1.3.1 · .dmg · 第一次打开看下方常见问题</div>
+        </div>
+      </div>
       <div class="dc soon" data-r style="--d:2"><span class="soon-tag">开发中</span><svg class="wm"><use href="#i-phone"/></svg><div class="pi"><svg><use href="#i-phone"/></svg></div><h3>iOS</h3><p>iPhone 与 iPad</p><div class="go" data-soon="iOS">敬请期待</div></div>
       <div class="dc soon" data-r style="--d:3"><span class="soon-tag">开发中</span><svg class="wm"><use href="#i-android"/></svg><div class="pi"><svg><use href="#i-android"/></svg></div><h3>Android</h3><p>安卓手机与平板</p><div class="go" data-soon="Android">敬请期待</div></div>
     </div>
@@ -1094,9 +1112,10 @@ footer nav a:hover{color:var(--ink2)}
     <div class="faq">
       <div class="qa open" data-r><button>要花钱吗？<i></i></button><div class="ans"><div><p><b>完全免费。</b>AI 功能也内置了免费额度，装上就能用；想用自己的 Key，在「设置 → 高级」里填上就行。</p></div></div></div>
       <div class="qa" data-r><button>安装时 Windows 提示"已保护你的电脑"怎么办？<i></i></button><div class="ans"><div><p>安装包暂时没有做数字签名，所以 SmartScreen 会提醒一下。点 <b>更多信息 → 仍要运行</b> 即可继续安装。</p></div></div></div>
+      <div class="qa" data-r><button>Mac 上打开时提示"无法验证开发者"或"已损坏"怎么办？<i></i></button><div class="ans"><div><p>Mac 版暂时没有 Apple 的开发者签名，系统会拦一下。先把河传答哒拖进「应用程序」，然后：<b>按住 Control 点图标 → 打开</b>；macOS 15 及以上先双击一次，再去 <b>系统设置 → 隐私与安全性</b>，往下找到河传答哒点 <b>仍要打开</b>。如果提示"已损坏"，打开「终端」运行 <code>xattr -cr /Applications/河传答哒.app</code> 再打开就好。</p><p>不知道自己的 Mac 是哪种芯片：点屏幕左上角的苹果图标 → <b>关于本机</b>，"芯片"写着 Apple M1 / M2 / M3 / M4 的下载 Apple 芯片版，写着 Intel 的下载 Intel 版。</p></div></div></div>
       <div class="qa" data-r><button>课表怎么导进来？<i></i></button><div class="ans"><div><p>第一次打开时直接输入学号和统一身份认证的密码，软件会自动登录教务系统，把课表、考试安排和成绩一起同步回来，还会读出你的名字跟你打招呼。也可以先不登录，之后在课程表页点「导入课表」。</p></div></div></div>
       <div class="qa" data-r><button>录课转文字需要联网吗？<i></i></button><div class="ans"><div><p><b>不需要。</b>识别在本机离线完成，大约占用 400MB 内存。只有"生成笔记""找出作业 / 考试"这类 AI 整理需要联网。</p></div></div></div>
-      <div class="qa" data-r><button>关掉窗口后还会提醒吗？<i></i></button><div class="ans"><div><p>会。关闭窗口默认缩到右下角托盘继续运行，到点照样弹通知；也可以在设置里打开开机自启。</p></div></div></div>
+      <div class="qa" data-r><button>关掉窗口后还会提醒吗？<i></i></button><div class="ans"><div><p>会。关闭窗口默认缩到右下角托盘（Mac 上是屏幕顶部的菜单栏）继续运行，到点照样弹通知；也可以在设置里打开开机自启。</p></div></div></div>
     </div>
   </div>
 </section>
@@ -1128,8 +1147,11 @@ footer nav a:hover{color:var(--ink2)}
    ================================================================ */
 const DOWNLOAD = {
   pan: 'https://1833332470.share.123pan.cn/123pan/CsXhTd-wHPmd',  // 网盘高速下载（123 云盘）
-  windows: 'https://github.com/ahuocheng/hechuan-dada/releases/download/v1.3.1/campus-assistant-setup-1.3.1.exe'  // GitHub 备用线路
+  windows: 'https://github.com/ahuocheng/hechuan-dada/releases/download/v1.3.1/campus-assistant-setup-1.3.1.exe',  // GitHub 备用线路
+  mac: 'https://github.com/ahuocheng/hechuan-dada/releases/download/v1.3.1/campus-assistant-1.3.1-mac-arm64.dmg',  // Mac · Apple 芯片
+  macIntel: 'https://github.com/ahuocheng/hechuan-dada/releases/download/v1.3.1/campus-assistant-1.3.1-mac-x64.dmg'  // Mac · Intel
 };
+const DL_NAME = { windows: 'Windows 版', mac: 'Mac 版（Apple 芯片）', macIntel: 'Mac 版（Intel）' };
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -1148,13 +1170,23 @@ function toast(msg) {
 }
 
 /* ---------- 下载按钮 ---------- */
+// 用 Mac 打开的：首屏和结尾的大按钮直接换成 Mac 版（iPad 也会说自己是 Mac，用触屏排除掉）
+if (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints < 2) {
+  $$('.btn-split').filter(b => !b.closest('#download')).forEach(b => {
+    const [main, alt] = b.querySelectorAll('a');
+    main.dataset.dl = 'mac';
+    main.innerHTML = '<svg><use href="#i-apple"/></svg>下载 Mac 版<small>Apple 芯片</small>';
+    alt.dataset.dl = 'macIntel';
+    alt.innerHTML = 'Intel 版<small>老款 Mac</small>';
+  });
+}
 $$('[data-dl]').forEach(a => {
   const url = DOWNLOAD[a.dataset.dl];
   if (url) a.href = url;
   // 网盘是分享页，新标签页打开；GitHub 是直接下载
   if (url && a.dataset.dl === 'pan') { a.target = '_blank'; a.rel = 'noopener'; }
   a.addEventListener('click', e => {
-    if (DOWNLOAD[a.dataset.dl]) { toast(a.dataset.dl === 'pan' ? '正在打开 123 云盘…' : '开始下载河传答哒 Windows 版…'); return; }
+    if (DOWNLOAD[a.dataset.dl]) { toast(a.dataset.dl === 'pan' ? '正在打开 123 云盘…' : '开始下载河传答哒 ' + DL_NAME[a.dataset.dl] + '…'); return; }
     // 还没有链接：首屏按钮滚到下载区，下载区按钮给提示
     if (a.closest('#download')) { e.preventDefault(); toast('下载链接马上就来，稍后再试一下～'); }
   });

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, shell, utilityProcess, safeStorage, session, Tray, Notification, nativeImage, screen, clipboard } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, shell, utilityProcess, safeStorage, session, Tray, Notification, nativeImage, screen, clipboard, systemPreferences } = require('electron');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
@@ -16,9 +16,17 @@ const fs = require('fs');
 })();
 
 let mainWin = null, tray = null;
-const ICON = path.join(__dirname, 'build', 'icon.ico');
-// 开机自启时带 --hidden：只在后台运行（照样提醒），不弹窗口
-const startHidden = process.argv.includes('--hidden');
+// Mac 版：没有托盘和任务栏，换成屏幕顶部菜单栏的小图标和程序坞；窗口左上角用系统的红黄绿三个按钮
+const IS_MAC = process.platform === 'darwin';
+// .ico 在 Mac 上读不出来，Mac 用 png
+const ICON = path.join(__dirname, 'build', IS_MAC ? 'logo.png' : 'icon.ico');
+// 菜单栏图标用"模板图"（只有黑色和透明，系统按深色 / 浅色菜单栏自动换颜色），文件名带 Template 才会这样处理
+const TRAY_ICON = IS_MAC ? path.join(__dirname, 'build', 'trayTemplate.png') : ICON;
+// 托盘在哪、怎么退出：提示文字里用
+const TRAY_TIP = IS_MAC ? '点屏幕顶部菜单栏里的河传答哒图标' : '右键点屏幕右下角托盘里的图标';
+// 开机自启时带 --hidden：只在后台运行（照样提醒），不弹窗口。
+// Mac 的登录项不能带参数，看系统告诉我们的"是不是开机时打开的"
+const startHidden = () => process.argv.includes('--hidden') || (IS_MAC && (() => { try { return app.getLoginItemSettings().wasOpenedAtLogin; } catch (e) { return false; } })());
 
 // 偏好：关闭窗口时是否缩到托盘（默认是，这样才能继续提醒）；是否显示桌宠（默认显示）
 const PREF_FILE = () => path.join(app.getPath('userData'), 'prefs.json');
@@ -29,14 +37,16 @@ function prefsSave() { try { fs.writeFileSync(PREF_FILE(), JSON.stringify(prefs)
 function createMain() {
   mainWin = new BrowserWindow({
     width: 1280, height: 820, minWidth: 980, minHeight: 640,
-    title: '河传答哒', show: !startHidden,
+    title: '河传答哒', show: !startHidden(),
     icon: ICON,
     // 不要系统标题栏：右上角的最小化 / 最大化 / 关闭由页面自己画（橙色模糊光晕里的三个按钮）
-    frame: false,
+    // Mac 上保留系统的红黄绿按钮（放在左上角，页面把侧边栏往下让一点），页面不再画那三个按钮
+    ...(IS_MAC ? { titleBarStyle: 'hidden', trafficLightPosition: { x: 16, y: 16 } } : { frame: false }),
     // 窗口藏起来时定时器也要照常跑，不然提醒会晚
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false }
   });
-  Menu.setApplicationMenu(null);
+  // Mac 必须有菜单栏菜单，不然 ⌘C / ⌘V / ⌘A / ⌘Q 这些快捷键都不好用
+  Menu.setApplicationMenu(IS_MAC ? macMenu() : null);
   mainWin.loadFile('index.html');
   // 窗口状态告诉页面：最大化时按钮换成"还原"图标，窗口不在前台时光晕变淡
   const winState = () => mainWin && !mainWin.isDestroyed() && mainWin.webContents.send('win:state', { max: mainWin.isMaximized(), focus: mainWin.isFocused() });
@@ -54,7 +64,7 @@ function createMain() {
     mainWin.hide();
     if (!prefs.trayTipShown) {
       prefs.trayTipShown = true; prefsSave();
-      notify('河传答哒还在后台运行', '会继续按时提醒你。要彻底退出，右键点屏幕右下角托盘里的图标');
+      notify('河传答哒还在后台运行', '会继续按时提醒你。要彻底退出，' + TRAY_TIP + (IS_MAC ? '，选「退出」，或者按 ⌘Q' : ''));
     }
   });
   // 主窗口真的关掉了（没开托盘）就退出：桌宠窗口还开着，不会自动触发 window-all-closed
@@ -64,6 +74,34 @@ function showMain() {
   if (!mainWin || mainWin.isDestroyed()) return;
   if (mainWin.isMinimized()) mainWin.restore();
   mainWin.show(); mainWin.focus();
+}
+// Mac 屏幕顶部的菜单：程序菜单（关于、隐藏、退出）、编辑（复制粘贴这些快捷键靠它）、窗口
+function macMenu() {
+  return Menu.buildFromTemplate([
+    { label: app.name, submenu: [
+      { role: 'about', label: '关于河传答哒' },
+      { type: 'separator' },
+      { label: '设置…', accelerator: 'Cmd+,', click: () => { showMain(); mainWin.webContents.executeJavaScript("typeof go === 'function' && go('settings')").catch(() => {}); } },
+      { type: 'separator' },
+      { role: 'hide', label: '隐藏河传答哒' },
+      { role: 'hideOthers', label: '隐藏其他' },
+      { role: 'unhide', label: '全部显示' },
+      { type: 'separator' },
+      { role: 'quit', label: '退出河传答哒' }
+    ] },
+    { label: '编辑', submenu: [
+      { role: 'undo', label: '撤销' }, { role: 'redo', label: '重做' },
+      { type: 'separator' },
+      { role: 'cut', label: '剪切' }, { role: 'copy', label: '拷贝' }, { role: 'paste', label: '粘贴' },
+      { role: 'pasteAndMatchStyle', label: '粘贴并匹配样式' }, { role: 'selectAll', label: '全选' }
+    ] },
+    { label: '显示', submenu: [
+      { role: 'resetZoom', label: '实际大小' }, { role: 'zoomIn', label: '放大' }, { role: 'zoomOut', label: '缩小' },
+      { type: 'separator' },
+      { role: 'togglefullscreen', label: '进入 / 退出全屏' }
+    ] },
+    { role: 'windowMenu', label: '窗口' }
+  ]);
 }
 
 // 托盘图标：单击打开；右键菜单可以开关开机自启、退出
@@ -79,9 +117,12 @@ function fixAutoStartPath() {
   } catch (e) {}
 }
 function createTray() {
-  tray = new Tray(nativeImage.createFromPath(ICON));
+  const img = nativeImage.createFromPath(TRAY_ICON);
+  if (IS_MAC) img.setTemplateImage(true);
+  tray = new Tray(img);
   tray.setToolTip('河传答哒');
-  tray.on('click', showMain);
+  // Mac 上点菜单栏图标是弹出菜单（第一项就是打开），不再另外弹窗口
+  if (!IS_MAC) tray.on('click', showMain);
   updateTrayMenu();
 }
 function updateTrayMenu() {
@@ -175,6 +216,8 @@ function createPet() {
     skipTaskbar: true, alwaysOnTop: true, hasShadow: false, title: '河传答哒',
     webPreferences: { preload: path.join(__dirname, 'pet-preload.js'), contextIsolation: true, nodeIntegration: false }
   });
+  // Mac 上切换桌面（调度中心里的多个桌面）时桌宠跟着走
+  if (IS_MAC) petWin.setVisibleOnAllWorkspaces(true, { skipTransformProcessType: true });
   petWin.loadFile('pet.html', { query: { s: String(s) } });
   petWin.once('ready-to-show', () => petWin && petWin.showInactive());
   // 拖进来的文件、链接不要把页面导航走
@@ -245,7 +288,7 @@ ipcMain.handle('pet:toggleWidget', e => { if (fromPet(e)) setWidgetsOff(!prefs.w
 ipcMain.handle('pet:hide', e => {
   if (!fromPet(e)) return false;
   setPet(false);
-  notify('桌宠先藏起来了', '想让它回来：右键点托盘图标，勾上「显示桌宠」；或者在「设置 → 启动」里打开');
+  notify('桌宠先藏起来了', '想让它回来：' + (IS_MAC ? '点菜单栏里的河传答哒图标' : '右键点托盘图标') + '，勾上「显示桌宠」；或者在「设置 → 启动」里打开');
   return true;
 });
 ipcMain.handle('pet:getTheme', () => appTheme);
@@ -303,6 +346,7 @@ function createWidget(w, i = 0) {
   });
   const rec = { win, size, drag: 0 };
   widgetWins.set(w.id, rec);
+  if (IS_MAC) win.setVisibleOnAllWorkspaces(true, { skipTransformProcessType: true });
   win.loadFile('widget.html', { query: { id: w.id } });
   win.once('ready-to-show', () => !win.isDestroyed() && win.showInactive());
   win.webContents.on('will-navigate', e => e.preventDefault());
@@ -397,6 +441,12 @@ ipcMain.handle('widgets:locate', (e, id) => {
 const REC_DIR = () => path.join(app.getPath('userData'), 'recordings');
 const recFiles = new Map();
 let recSeq = 0;
+// Mac 要先问系统要麦克风权限（第一次会弹系统的询问框）；Windows 不用问
+ipcMain.handle('mic:access', async () => {
+  if (!IS_MAC) return true;
+  try { return systemPreferences.getMediaAccessStatus('microphone') === 'granted' || await systemPreferences.askForMediaAccess('microphone'); }
+  catch (e) { return true; }
+});
 ipcMain.handle('rec:begin', () => {
   fs.mkdirSync(REC_DIR(), { recursive: true });
   const d = new Date(), p2 = n => String(n).padStart(2, '0');
@@ -916,12 +966,14 @@ ipcMain.handle('app:pinGuide', () => {
   return false;
 });
 
-// 明确告诉 Windows 这是哪个程序，任务栏才会用自己的图标，不和 Electron 混在一起
-app.setAppUserModelId('cn.student.campusassistant');
+// 明确告诉 Windows 这是哪个程序，任务栏才会用自己的图标，不和 Electron 混在一起（只有 Windows 有这个方法）
+if (process.platform === 'win32') app.setAppUserModelId('cn.student.campusassistant');
 // 只开一个：再次打开（比如点开始菜单）时把已经在运行的那个调出来
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', showMain);
+  // Mac：窗口缩到后台后，点程序坞里的图标把它叫回来
+  app.on('activate', showMain);
   app.whenReady().then(() => { prefsLoad(); createMain(); createTray(); fixAutoStartPath(); if (prefs.pet) createPet(); showWidgets(); });
 }
 app.on('before-quit', () => { app.isQuitting = true; });

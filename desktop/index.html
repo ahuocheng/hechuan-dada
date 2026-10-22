@@ -87,6 +87,10 @@ body.win-max .tb-btns .ic-restore{display:inline}
 /* 标题栏那一条可以拖动窗口；落在里面的按钮要能点 */
 #sideToggle,#sideShow{-webkit-app-region:no-drag}
 body.frameless .view{padding-top:46px}
+/* Mac：用系统左上角的红黄绿按钮，页面不画右上角那三个；侧边栏和"展开侧边栏"按钮给红黄绿让位 */
+body.mac .tb-btns,body.mac .tb-glow{display:none}
+body.mac aside{padding-top:50px}
+body.mac #sideShow{left:88px;top:8px}
 
 /* ========== 桌面小组件页面 ========== */
 .wg-mine{padding:0;overflow:hidden}
@@ -641,7 +645,7 @@ details.adv summary .hint{font-weight:400}
       <div class="hs-box">
         <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input type="text" id="hsInput" placeholder="搜索" autocomplete="off" spellcheck="false">
-        <kbd>Ctrl K</kbd>
+        <kbd data-mac="⌘ K">Ctrl K</kbd>
       </div>
       <div class="hs-results" id="hsResults"></div>
     </div>
@@ -823,7 +827,7 @@ details.adv summary .hint{font-weight:400}
     </section>
     <section>
       <h2>提醒</h2>
-      <p class="hint" style="margin:-6px 0 14px">到时间在屏幕右下角弹出通知。软件要开着（缩到托盘也算）才能提醒。</p>
+      <p class="hint" style="margin:-6px 0 14px" data-mac="到时间在屏幕右上角弹出通知。软件要开着（缩到菜单栏也算）才能提醒。">到时间在屏幕右下角弹出通知。软件要开着（缩到托盘也算）才能提醒。</p>
       <div class="form">
         <label>上课</label><div class="row">上课前 <input type="number" id="rCourse" min="0" max="120" style="width:76px"> 分钟 <span class="hint">填 0 就不提醒</span></div>
         <label>作业 / 考试</label><div class="row"><label class="row" style="gap:6px;color:var(--text)"><input type="checkbox" id="rTaskEve">前一天</label><input type="time" id="rTaskEveAt" style="width:116px"><span style="width:10px"></span><label class="row" style="gap:6px;color:var(--text)"><input type="checkbox" id="rTaskDay">截止前</label><input type="number" id="rTaskHours" min="1" max="24" style="width:66px"> 小时</div>
@@ -835,7 +839,7 @@ details.adv summary .hint{font-weight:400}
       <h2>启动</h2>
       <div class="jw-checks" style="margin-top:0">
         <label><input type="checkbox" id="pAuto"> 开机自动启动（在后台运行，不弹窗口，到时间照样提醒）</label>
-        <label><input type="checkbox" id="pTray"> 关闭窗口时缩到右下角托盘，不退出（这样才能继续提醒）</label>
+        <label><input type="checkbox" id="pTray"> <span data-mac="关闭窗口时缩到屏幕顶部菜单栏，不退出（这样才能继续提醒）">关闭窗口时缩到右下角托盘，不退出（这样才能继续提醒）</span></label>
         <label><input type="checkbox" id="pPet"> 在桌面上显示桌宠（把微信、钉钉里的聊天文字拖给它，自动找出日程）</label>
         <div class="row" style="padding-left:24px;gap:8px"><span class="hint">桌宠大小</span><div class="seg" id="pPetSize"><button data-s="s">小</button><button data-s="m">中</button><button data-s="l">大</button></div></div>
         <label><input type="checkbox" id="pWidget"> 在桌面上显示小组件（时钟、下一节课、待办、月历……可以放好几个）</label>
@@ -2105,8 +2109,11 @@ $('#recBtn').onclick = async () => {
   if (rec) return stopRec();
   if (!window.desktop) return toast('录音需要在桌面版里使用');
   let stream;
+  const micHelp = window.desktop.platform === 'darwin' ? '系统设置 → 隐私与安全性 → 麦克风 里打开河传答哒' : 'Windows 设置 → 隐私 → 麦克风 里允许使用';
+  // Mac 要先向系统要麦克风权限
+  if (window.desktop.micAccess && !(await window.desktop.micAccess())) return toast('没有麦克风权限：在' + micHelp, 6000);
   try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true } }); }
-  catch (e) { return toast('打不开麦克风：检查一下电脑有没有麦克风，或者在 Windows 设置 → 隐私 → 麦克风 里允许使用', 6000); }
+  catch (e) { return toast('打不开麦克风：检查一下电脑有没有麦克风，或者在 ' + micHelp, 6000); }
   const id = await window.desktop.recBegin();
   const mr = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 32000 });
   let chain = Promise.resolve();
@@ -2455,6 +2462,11 @@ if (window.desktop?.onWidgetsChanged) {
 /* ========== 自己画的窗口按钮（桌面版才有；网页预览还是浏览器自己的） ========== */
 if (window.desktop?.winCtl) {
   document.body.classList.add('frameless');
+  // Mac：窗口按钮用系统的；说到托盘、右下角、Ctrl 的地方换成 Mac 的说法
+  if (window.desktop.platform === 'darwin') {
+    document.body.classList.add('mac');
+    document.querySelectorAll('[data-mac]').forEach(el => el.textContent = el.dataset.mac);
+  }
   $$('#titlebar [data-w]').forEach(b => b.onclick = () => window.desktop.winCtl(b.dataset.w));
   window.desktop.onWinState(s => {
     document.body.classList.toggle('win-max', !!s.max);
@@ -2796,7 +2808,7 @@ $$('#rCourse, #rTaskEve, #rTaskEveAt, #rTaskDay, #rTaskHours, #rEvent').forEach(
 });
 $('#rTest').onclick = () => {
   if (!window.desktop) return toast('提醒需要在桌面版里使用');
-  window.desktop.notify({ title: '这是一条测试提醒', body: '到时间就会像这样在右下角弹出来' });
+  window.desktop.notify({ title: '这是一条测试提醒', body: '到时间就会像这样在' + (window.desktop.platform === 'darwin' ? '右上角' : '右下角') + '弹出来' });
 };
 $('#pAuto').onchange = () => window.desktop.setPrefs({ autostart: $('#pAuto').checked });
 $('#pTray').onchange = () => window.desktop.setPrefs({ tray: $('#pTray').checked });
