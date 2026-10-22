@@ -1,0 +1,3176 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>河传答哒</title>
+<link rel="stylesheet" href="fonts/noto-serif-sc/500.css">
+<link rel="stylesheet" href="widget-kit.css">
+<style>
+/* ========== 主题 ========== */
+:root{
+  --bg:#faf9f5; --side:#f3f1ea; --panel:#ffffff; --hover:#ebe8df; --line:#e6e2d7; --line2:#efece4;
+  --text:#1f1e1b; --sub:#5f5c55; --muted:#97938a;
+  --accent:#c6613f; --accent-soft:#f6e8e0;
+  --c-course:#4e6e93; --c-task:#c6613f; --c-event:#5a8060; --c-other:#86689f;
+  --shadow:0 1px 2px rgba(40,35,20,.04),0 8px 28px rgba(40,35,20,.06);
+  --serif:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  --sans:"PingFang SC","Microsoft YaHei UI","Microsoft YaHei",system-ui,sans-serif;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#262624; --side:#1f1e1d; --panel:#30302e; --hover:#3a3936; --line:#3f3e3a; --line2:#353431;
+  --text:#f0eee6; --sub:#bcb9ae; --muted:#8b887f;
+  --accent:#d97757; --accent-soft:#45302a;
+  --c-course:#8aa7c9; --c-task:#e08a6b; --c-event:#8db592; --c-other:#b49bce;
+  --shadow:0 1px 2px rgba(0,0,0,.2),0 8px 28px rgba(0,0,0,.18);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){
+  :root[data-theme="system"]{
+    --bg:#262624; --side:#1f1e1d; --panel:#30302e; --hover:#3a3936; --line:#3f3e3a; --line2:#353431;
+    --text:#f0eee6; --sub:#bcb9ae; --muted:#8b887f;
+    --accent:#d97757; --accent-soft:#45302a;
+    --c-course:#8aa7c9; --c-task:#e08a6b; --c-event:#8db592; --c-other:#b49bce;
+    --shadow:0 1px 2px rgba(0,0,0,.2),0 8px 28px rgba(0,0,0,.18);
+    color-scheme:dark;
+  }
+}
+
+/* ========== 基础 ========== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;display:flex;background:var(--bg);color:var(--text);font:14px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+.serif{font-family:var(--serif);font-weight:500;letter-spacing:.01em}
+h1,h2,h3{margin:0;font-weight:600}
+h3{font-size:15px}
+.hint{color:var(--muted);font-size:12.5px}
+.grow{flex:1}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+svg.i{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 14px;transition:background .15s,border-color .15s}
+button:hover{background:var(--hover)}
+button:disabled{opacity:.45;cursor:default}
+button:disabled:hover{background:var(--panel)}
+button.primary{background:var(--text);border-color:var(--text);color:var(--bg)}
+button.primary:hover{opacity:.88}
+button.ghost{border-color:transparent;background:transparent;color:var(--sub)}
+button.ghost:hover{background:var(--hover);color:var(--text)}
+button.danger{color:#b8432c}
+input,select,textarea{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 11px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{resize:vertical;width:100%;line-height:1.7}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+
+/* ========== 标题栏：窗口没有系统边框，右上角画一团橙色光晕，下边是一条弧线，用高斯模糊过渡到界面里 ========== */
+.titlebar{display:none}
+body.frameless .titlebar{display:block;position:fixed;top:0;left:0;right:0;height:34px;z-index:60;-webkit-app-region:drag;pointer-events:none}
+/* 平时没有颜色，只有三个淡灰的图标；鼠标移到按钮上，光晕从右上角柔和地晕开。
+   形状本身伸出窗口上边和右边，模糊只柔化下面那条弧线 */
+.tb-glow{position:absolute;top:0;right:0;width:220px;height:80px;overflow:visible;opacity:0;transform:scale(.55);transform-origin:100% 0;
+  transition:opacity .45s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.titlebar:has(.tb-btns:hover) .tb-glow{opacity:1;transform:none}
+body.win-blur .tb-glow{filter:saturate(.6)}
+.tb-btns{position:absolute;top:5px;right:9px;display:flex;gap:2px;-webkit-app-region:no-drag;pointer-events:auto}
+.tb-btns button{all:unset;width:36px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--muted);transition:background .2s,color .35s,transform .1s}
+.tb-btns:hover button{color:#fff}
+.tb-btns button:hover{background:rgba(255,255,255,.2)}
+.tb-btns button:active{transform:scale(.92)}
+.tb-btns .tb-close:hover{background:#cf5638}
+.tb-btns svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:filter .35s}
+.tb-btns:hover svg{filter:drop-shadow(0 1px 1px rgba(110,45,15,.3))}
+.tb-btns .ic-restore{display:none}
+body.win-max .tb-btns .ic-max{display:none}
+body.win-max .tb-btns .ic-restore{display:inline}
+/* 标题栏那一条可以拖动窗口；落在里面的按钮要能点 */
+#sideToggle,#sideShow{-webkit-app-region:no-drag}
+body.frameless .view{padding-top:46px}
+/* Mac：用系统左上角的红黄绿按钮，页面不画右上角那三个；侧边栏和"展开侧边栏"按钮给红黄绿让位 */
+body.mac .tb-btns,body.mac .tb-glow{display:none}
+body.mac aside{padding-top:50px}
+body.mac #sideShow{left:88px;top:8px}
+
+/* ========== 桌面小组件页面 ========== */
+.wg-mine{padding:0;overflow:hidden}
+.wg-tabs{display:flex;gap:6px;padding:14px 18px 0;flex-wrap:wrap;align-items:center}
+.wg-tabs .hint{margin-right:6px}
+.wg-tab{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel);font-size:13.5px}
+.wg-tab i{width:8px;height:8px;border-radius:50%}
+.wg-tab.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.wg-ed{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:0;margin-top:14px;border-top:1px solid var(--line2)}
+/* 预览台：一块柔和的"桌面"，透明主题也看得出效果 */
+.wg-stage{position:relative;min-height:480px;background:linear-gradient(135deg,#d6dcf0 0%,#ecd6e4 50%,#f6d9bf 100%);overflow:hidden}
+:root[data-theme="dark"] .wg-stage{background:linear-gradient(135deg,#232a44 0%,#3a2c40 50%,#4a3326 100%)}
+.wg-stage::before,.wg-stage::after{content:'';position:absolute;border-radius:50%;filter:blur(50px);opacity:.6}
+.wg-stage::before{width:300px;height:300px;left:-60px;bottom:-80px;background:#f3a26f}
+.wg-stage::after{width:280px;height:280px;right:-40px;top:-60px;background:#8fa6e8}
+.wg-stage .wg-sc{position:relative;z-index:1}
+.wg-ctl{padding:18px 22px 20px;display:flex;flex-direction:column;gap:16px;border-left:1px solid var(--line2)}
+.wg-f>label,.wg-f>.lb{display:block;font-size:12px;color:var(--muted);margin-bottom:7px;letter-spacing:.04em}
+.wg-chips{display:flex;flex-wrap:wrap;gap:6px}
+.wg-chips button{padding:4px 11px;border-radius:99px;font-size:12.5px}
+.wg-chips button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.wg-sws{display:flex;gap:10px}
+.wg-sws button{width:24px;height:24px;padding:0;border-radius:50%;border:0;position:relative;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.wg-sws button.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--text);opacity:.5}
+.wg-f input[type=range]{width:100%;accent-color:var(--accent);padding:0}
+.wg-mods{display:flex;flex-direction:column;gap:2px}
+.wg-mods .m{display:flex;align-items:center;gap:8px;font-size:13.5px;padding:3px 0}
+.wg-mods .m span{flex:1}
+.wg-mods .m.off span{color:var(--muted)}
+.wg-mods .mv{width:26px;height:26px;padding:0;border:0;background:transparent;border-radius:7px;color:var(--muted)}
+.wg-mods .mv:hover{background:var(--hover);color:var(--text)}
+.wg-mods .mv:disabled{opacity:.25}
+.wg-empty{padding:34px 20px;text-align:center;color:var(--muted)}
+.wg-sec{display:flex;align-items:baseline;gap:12px;margin:30px 0 14px}
+.wg-sec h2{font-weight:500;font-size:20px}
+.wg-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.wg-g{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.wg-pv{position:relative;height:250px;background:var(--side);border-bottom:1px solid var(--line2);overflow:hidden}
+.wg-g .wg-gt{padding:14px 16px 4px;flex:1}
+.wg-g .wg-gt b{display:block;font-size:15px;margin-bottom:2px}
+.wg-g .wg-ga{display:flex;align-items:center;gap:8px;padding:10px 16px 16px}
+.wg-g .wg-ga .hint{margin-left:auto}
+/* 预览放在框正中间，按框的大小缩小（比框大时网格居中会贴到一边去，所以用绝对定位） */
+.wg-sc{position:absolute;left:50%;top:50%;width:max-content;transform:translate(-50%,-50%);transform-origin:center}
+
+/* ========== 侧栏 ========== */
+aside{width:232px;flex:none;background:var(--side);border-right:1px solid var(--line2);display:flex;flex-direction:column;padding:18px 12px 14px;overflow:hidden;white-space:nowrap;transition:width .26s cubic-bezier(.3,.8,.25,1),padding .26s}
+/* 收起侧边栏：宽度收到 0，左上角留一个按钮可以再打开 */
+body.side-off aside{width:0;padding-left:0;padding-right:0;border-right:0}
+.icon-btn{width:32px;height:32px;padding:0;border:0;background:transparent;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--sub)}
+.icon-btn:hover{background:var(--hover);color:var(--text)}
+#sideShow{position:fixed;left:12px;top:14px;z-index:5;display:none;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
+body.side-off #sideShow{display:flex}
+body.side-off .view{padding-left:64px}
+.brand{display:flex;align-items:center;justify-content:space-between;padding:0 4px 18px 8px}
+/* 应用标志：液态玻璃日历书签（和程序图标一致，图片在 build/logo.png） */
+.logo{flex:none;background:url(build/logo.png) center/contain no-repeat;filter:drop-shadow(0 2px 6px rgba(40,35,20,.12))}
+.brand .logo{width:30px;height:30px}
+nav{display:flex;flex-direction:column;gap:2px;position:relative}
+nav a{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:9px;color:var(--sub);cursor:pointer;user-select:none;position:relative;z-index:1;transition:color .2s}
+nav a:hover{background:color-mix(in srgb,var(--hover) 60%,transparent);color:var(--text)}
+nav a.on{color:var(--text);font-weight:600}
+nav a.on:hover{background:transparent}
+/* 选中项的底色块：切换时上下滑动 */
+.nav-pill{position:absolute;left:0;right:0;top:0;height:0;border-radius:9px;background:var(--hover);z-index:0;pointer-events:none;transition:top .34s cubic-bezier(.3,.8,.25,1),height .34s cubic-bezier(.3,.8,.25,1)}
+.side-label{font-size:12px;color:var(--muted);padding:18px 10px 6px}
+.me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer}
+.me:hover{background:var(--hover)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--text);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:none}
+.me .nm{font-weight:600;font-size:13.5px;line-height:1.3}
+.me .sc{font-size:12px;color:var(--muted)}
+
+/* ========== 主区域 ========== */
+/* 右边不要滚动条：滚轮、触控板照样能滚 */
+main{flex:1;min-width:0;overflow:auto;scrollbar-width:none}
+main::-webkit-scrollbar{display:none}
+.view{display:none;padding:34px 44px 48px;max-width:1240px;margin:0 auto}
+.view.on{display:block}
+/* 切换板块：往下切内容从下方升起，往上切从上方落下 */
+.view.on.in-up{animation:viewUp .42s cubic-bezier(.2,.75,.2,1)}
+.view.on.in-down{animation:viewDown .42s cubic-bezier(.2,.75,.2,1)}
+@keyframes viewUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes viewDown{from{opacity:0;transform:translateY(-26px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){
+  .view.on.in-up,.view.on.in-down{animation:none}
+  .nav-pill{transition:none}
+}
+.page-h{display:flex;align-items:flex-end;gap:12px;margin-bottom:26px;flex-wrap:wrap}
+.page-h h1{font-size:30px;line-height:1.25}
+.page-h p{margin:6px 0 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.card-h h3{font-family:var(--serif);font-weight:500;font-size:17px}
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:20px;align-items:start}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:2px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:5px 12px}
+.seg button:hover{background:var(--hover)}
+.seg button.on{background:var(--hover);font-weight:600}
+.link{color:var(--accent);cursor:pointer;font-size:13px;margin-left:auto}
+.link:hover{text-decoration:underline}
+.empty{color:var(--muted);text-align:center;padding:22px 0;font-size:13px}
+
+
+/* 时间线 */
+.tl{display:flex;gap:12px;padding:10px 6px;border-radius:10px;cursor:pointer;align-items:stretch}
+.tl:hover{background:var(--line2)}
+.tl-time{width:48px;flex:none;text-align:right;font-variant-numeric:tabular-nums;line-height:1.35}
+.tl-time b{display:block;font-weight:600;font-size:13.5px}
+.tl-time span{font-size:12px;color:var(--muted)}
+.tl-bar{width:3px;border-radius:2px;flex:none;background:currentColor}
+.tl-body{flex:1;min-width:0}
+.tl-title{font-weight:600;display:flex;align-items:center;gap:8px}
+.tl-title span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-sub{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl.done{opacity:.5}
+.tag{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);flex:none}
+.tag.gray{background:var(--line2);color:var(--sub)}
+.c-course{color:var(--c-course)} .c-task{color:var(--c-task)} .c-event{color:var(--c-event)} .c-other{color:var(--c-other)}
+
+/* ========== 首页：问好 + 小日历 ========== */
+/* 整块垂直居中：问好 → 小日历（原来输入框的位置）→ 快捷按钮 */
+.home{max-width:700px;margin:0 auto;min-height:calc(100vh - 82px);display:flex;flex-direction:column;justify-content:center;padding-bottom:6vh}
+.hello{display:flex;align-items:center;justify-content:center;gap:14px}
+.hello .logo{width:46px;height:46px}
+.hello h1{font-size:40px;line-height:1.2}
+.hello-sub{text-align:center;color:var(--sub);margin:12px 0 28px;font-size:15px}
+.mini-wrap{display:grid;grid-template-columns:300px minmax(0,1fr);padding:0;overflow:hidden;border-radius:20px}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.chips button{border-radius:10px;padding:6px 13px;display:inline-flex;align-items:center;gap:7px;color:var(--sub);background:transparent}
+.chips button:hover{background:var(--panel);color:var(--text)}
+.chips svg.i{width:16px;height:16px}
+.mini{padding:18px 16px 14px;border-right:1px solid var(--line2)}
+.mini-h{display:flex;align-items:center;gap:2px;margin:0 2px 8px 6px}
+.mini-h b{font-size:17px;font-weight:500}
+.mini-h .icon-btn{width:28px;height:28px;font-size:17px}
+.mini-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));text-align:center}
+.mini-grid .mh{font-size:11.5px;color:var(--muted);padding:2px 0 6px}
+.mday{border:0;background:transparent;padding:2px 0 3px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:1px;font-variant-numeric:tabular-nums;font-size:13px}
+.mday:hover{background:var(--line2)}
+.mday span{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.mday.out{color:var(--muted);opacity:.5}
+.mday.we{color:var(--sub)}
+.mday.sel span{background:var(--hover);font-weight:600;color:var(--text)}
+.mday.today span{background:var(--accent);color:#fff;font-weight:600}
+.mday .dots{display:flex;gap:3px;height:4px}
+.mday .dots b{width:4px;height:4px;border-radius:50%;background:currentColor}
+.mini-ag{padding:18px 20px 12px;min-width:0;max-height:336px;overflow:auto}
+
+/* ========== 日历页：月历 ========== */
+#v-calendar{max-width:1560px;padding-top:24px;padding-bottom:18px;padding-right:28px}
+#v-calendar .page-h{margin-bottom:14px}
+#v-calendar .page-h h1{font-size:28px}
+.cal-wrap{display:grid;grid-template-columns:minmax(0,1fr) 262px;gap:16px;height:calc(100vh - 136px);min-height:540px}
+.month{display:grid;grid-template-columns:26px repeat(7,minmax(0,1fr));grid-template-rows:32px repeat(6,minmax(0,1fr));background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.month .hd{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;border-bottom:1px solid var(--line2)}
+.month .hd.we{color:color-mix(in srgb,var(--muted) 70%,transparent)}
+.month .wk{display:flex;justify-content:center;padding-top:12px;font-size:10.5px;color:var(--muted);border-bottom:1px solid var(--line2);font-variant-numeric:tabular-nums}
+.day{border-left:1px solid var(--line2);border-bottom:1px solid var(--line2);padding:5px 5px 3px;cursor:pointer;min-width:0;min-height:0;display:flex;flex-direction:column;container-type:inline-size;transition:background .12s}
+.day.we{background:color-mix(in srgb,var(--bg) 55%,var(--panel))}
+.day:hover{background:var(--line2)}
+.day.sel{background:color-mix(in srgb,var(--accent-soft) 55%,var(--panel))}
+.dh{display:flex;align-items:center;gap:5px;height:24px;flex:none;margin-bottom:2px}
+.dh .n{font-size:13px;display:inline-flex;min-width:24px;height:24px;align-items:center;justify-content:center;border-radius:50%;font-variant-numeric:tabular-nums;font-weight:500}
+.dh .lu{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.dh .lu.m1{color:var(--accent)}
+.day.out .dh,.day.out .evs{opacity:.42}
+.day.today .n{background:var(--accent);color:#fff;font-weight:600}
+.evs{flex:1;min-height:0;overflow:hidden}
+.ev{display:flex;align-items:center;gap:5px;font-size:11.5px;line-height:18px;height:18px;margin-bottom:1px;white-space:nowrap}
+.ev i{width:3px;height:11px;border-radius:2px;flex:none;background:currentColor}
+.ev .tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.ev .tm{color:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums;flex:none}
+.ev.done .tt{text-decoration:line-through;color:var(--muted)}
+.ev.more{color:var(--muted);font-size:11px;padding-left:8px}
+@container (max-width:118px){.ev .tm{display:none}}
+.side-col{display:flex;flex-direction:column;gap:16px;min-height:0}
+.side-col .card{padding:16px 16px 12px;overflow:auto}
+.side-col .card:first-child{flex:1.2;min-height:0}
+.side-col .card:last-child{flex:1;min-height:0}
+.legend{display:flex;gap:12px;font-size:11.5px;color:var(--sub);margin-top:10px;flex-wrap:wrap}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+
+/* ========== 待办 ========== */
+.todo-wrap{max-width:820px;display:flex;flex-direction:column;gap:16px}
+.todo{display:flex;align-items:center;gap:12px;padding:9px 6px;border-radius:10px;cursor:pointer}
+.todo:hover{background:var(--line2)}
+.todo .tb{flex:1;min-width:0}
+.todo .tt{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.todo .ts{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.todo.done .tt{text-decoration:line-through;color:var(--muted);font-weight:500}
+.todo input[type=checkbox]{width:18px;height:18px;flex:none;cursor:pointer}
+.tag.red{background:#f7dcd5;color:#b8432c}
+:root[data-theme="dark"] .tag.red{background:#4a2a22;color:#f0a38d}
+details.todo-group summary{cursor:pointer;font-family:var(--serif);font-size:17px;list-style:none}
+details.todo-group summary::-webkit-details-marker{display:none}
+details.todo-group[open] summary{margin-bottom:8px}
+
+/* ========== 考试成绩 ========== */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--bg);border:1px solid var(--line2);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-family:var(--serif);font-weight:500;font-size:26px;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.gr{display:grid;grid-template-columns:minmax(0,1fr) 52px 56px 48px;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line2);font-variant-numeric:tabular-nums}
+.gr:last-child{border-bottom:0}
+.gr.h{color:var(--muted);font-size:12px;padding-top:4px}
+.gr .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gr .nm small{color:var(--muted);margin-left:6px}
+.gr .r{text-align:right}
+.gr .fail{color:#b8432c;font-weight:600}
+.exam{display:flex;gap:14px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line2)}
+.exam:last-child{border-bottom:0}
+.exam.past{opacity:.5}
+.exam .dbox{width:52px;flex:none;text-align:center;border-radius:10px;background:var(--accent-soft);color:var(--accent);padding:5px 0;line-height:1.25}
+.exam .dbox b{display:block;font-size:15px}
+.exam .dbox span{font-size:11px}
+.exam .tb{flex:1;min-width:0}
+.exam .tb div:first-child{font-weight:600}
+.exam .tb div:last-child{font-size:12.5px;color:var(--muted)}
+
+/* ========== 录音 / 笔记搜索 ========== */
+.rec-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.rec-dot{width:9px;height:9px;border-radius:50%;background:#d0453a;animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+.rec-time{font-variant-numeric:tabular-nums;font-weight:600}
+button.rec-on{border-color:#d0453a;color:#d0453a}
+mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding:0 1px}
+.note-snip{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ========== 课程表 ========== */
+.tt-grid{display:grid;grid-template-columns:62px repeat(7,minmax(0,1fr));background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.tt-grid .h{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;border-bottom:1px solid var(--line2);line-height:1.3}
+.tt-grid .h small{color:var(--muted);font-size:11px}
+.tt-grid .h.today{color:var(--accent);font-weight:600}
+.tt-grid .sec{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;border-bottom:1px solid var(--line2);color:var(--sub);line-height:1.25}
+.tt-grid .sec small{font-size:10.5px;color:var(--muted)}
+.tt-grid .cell{border-left:1px solid var(--line2);border-bottom:1px solid var(--line2);cursor:pointer}
+.tt-grid .cell:hover{background:var(--line2)}
+.cblock{margin:3px;border-radius:9px;padding:7px 8px;font-size:12px;line-height:1.4;overflow:hidden;cursor:pointer;z-index:1;border-left:3px solid;color:var(--sub);transition:transform .12s}
+.cblock:hover{transform:translateY(-1px)}
+.cblock b{display:block;font-size:12.5px;color:var(--text);margin-bottom:2px}
+.cblock.ghost{border-color:var(--line);background:var(--bg);color:var(--muted);opacity:.85}
+.cblock.ghost b{color:var(--muted);font-weight:500}
+.cblock.ghost .nw{display:inline-block;font-size:10.5px;padding:0 6px;border-radius:99px;background:var(--line2);margin-bottom:3px}
+.other-note{display:flex;align-items:center;gap:8px;margin:-10px 0 16px;padding:10px 14px;border-radius:12px;background:var(--accent-soft);color:var(--sub);font-size:13px}
+details.imp{margin-top:20px}
+details.imp summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font-family:var(--serif);font-size:17px}
+details.imp summary::-webkit-details-marker{display:none}
+details.imp summary .arrow{transition:transform .2s;color:var(--muted)}
+details.imp[open] summary .arrow{transform:rotate(90deg)}
+.steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.step{border:1px solid var(--line2);border-radius:12px;padding:16px;background:var(--bg)}
+.step h4{margin:0 0 6px;font-size:14px}
+.step p{margin:0 0 12px}
+.list-item{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--line2);cursor:pointer;border-radius:6px}
+.list-item:last-child{border-bottom:0}
+.list-item:hover{background:var(--line2)}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.list-item .del{margin-left:auto;color:var(--muted);padding:0 6px;font-size:16px;line-height:1}
+.list-item .del:hover{color:#b8432c}
+
+/* ========== 录课 ========== */
+/* 导入文件：次要入口，一行小条 */
+.drop{display:flex;align-items:center;gap:10px;border:1.5px dashed var(--line);border-radius:12px;padding:10px 14px;cursor:pointer;transition:border-color .15s,background .15s;background:var(--bg);margin-top:14px;min-width:0}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop svg.i{width:18px;height:18px;color:var(--muted);flex:none}
+.drop .t{font-size:13.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.drop .hint{margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* 一键录音：主要入口，大圆按钮 */
+.rec-hero{display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 0 18px;border-radius:16px;background:radial-gradient(ellipse at 50% 30%,var(--accent-soft),transparent 70%)}
+.rec-big{position:relative;width:84px;height:84px;border-radius:50%;padding:0;border:0;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px color-mix(in srgb,var(--accent) 38%,transparent);transition:transform .15s,background .2s}
+.rec-big:hover{background:var(--accent);transform:scale(1.04)}
+.rec-big svg.i{width:34px;height:34px;stroke:#fff;stroke-width:1.8}
+.rec-big.rec-on{background:#d0453a}
+.rec-big.rec-on::before,.rec-big.rec-on::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid #d0453a;animation:recRing 1.8s ease-out infinite}
+.rec-big.rec-on::after{animation-delay:.9s}
+@keyframes recRing{from{transform:scale(1);opacity:.7}to{transform:scale(1.6);opacity:0}}
+.rec-title{font-family:var(--serif);font-size:19px;margin-top:8px}
+.prog{height:5px;border-radius:3px;background:var(--line2);overflow:hidden;margin:14px 0 6px}
+.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.soon{border-radius:14px;padding:20px;background:linear-gradient(135deg,var(--accent-soft),transparent 75%);border:1px solid var(--line2)}
+.soon h3{font-family:var(--serif);font-weight:500;font-size:18px;margin-bottom:4px}
+.soon p{margin:0 0 12px;color:var(--sub);font-size:13px}
+.cand{padding:12px 0;border-bottom:1px solid var(--line2)}
+.cand:last-of-type{border-bottom:0}
+/* AI 笔记（简单的 Markdown 显示） */
+.md{max-height:460px;overflow:auto;font-size:13.5px;line-height:1.75}
+.md h4{font-family:var(--serif);font-weight:500;font-size:15.5px;margin:14px 0 4px}
+.md h4:first-child{margin-top:0}
+.md p{margin:2px 0}
+.md .li{position:relative;padding-left:14px;margin:2px 0}
+.md .li::before{content:'';position:absolute;left:3px;top:.72em;width:4px;height:4px;border-radius:50%;background:var(--muted)}
+.md .ts{color:var(--accent);font-variant-numeric:tabular-nums}
+.cands input[type=date]{width:148px}
+.cands input[type=time]{width:110px}
+
+/* ========== 设置 ========== */
+.set{max-width:760px}
+.set section{padding:22px 0;border-bottom:1px solid var(--line2)}
+.set section:last-child{border-bottom:0}
+.set h2{font-family:var(--serif);font-weight:500;font-size:18px;margin-bottom:14px}
+.form{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px 16px;align-items:center}
+.form label{color:var(--sub);font-size:13.5px}
+.form .top{align-self:start;padding-top:7px}
+
+/* ========== 弹窗 / 提示 ========== */
+dialog{border:1px solid var(--line);border-radius:18px;padding:26px;background:var(--panel);color:var(--text);width:460px;max-width:92vw;box-shadow:0 24px 70px rgba(0,0,0,.18)}
+dialog::backdrop{background:rgba(30,28,22,.28);backdrop-filter:blur(2px)}
+dialog h3{font-family:var(--serif);font-weight:500;font-size:20px;margin-bottom:18px}
+.dlg-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:22px}
+.dlg-btns .l{margin-right:auto}
+#welcome{width:440px;text-align:center;padding:40px 40px 28px}
+#welcome .logo{width:72px;height:72px;margin:0 auto 18px}
+#welcome h3{font-size:26px;margin-bottom:10px}
+#welcome p{color:var(--sub);margin:0 0 22px;line-height:1.75}
+.wl-pane{display:none}
+.wl-pane.on{display:block;animation:wlIn .32s ease}
+@keyframes wlIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.wl-form{display:flex;flex-direction:column;gap:10px;text-align:left}
+.wl-form input[type=text],.wl-form input[type=password]{width:100%;font-size:15px;padding:10px 12px}
+.wl-rem{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--sub);cursor:pointer;margin-top:2px}
+#welcome .jw-err{margin:10px 0 8px;min-height:18px;text-align:left}
+.wl-go{width:100%;padding:11px;font-size:15px}
+.wl-skip{display:inline-block;margin-top:14px;font-size:12.5px;color:var(--muted);cursor:pointer}
+.wl-skip:hover{color:var(--accent)}
+#wName{width:100%;text-align:center;font-size:16px;padding:10px;margin-bottom:14px}
+/* 正在为你定制：标志外面一圈渐变光环在转，标志轻轻呼吸 */
+.wl-spin{position:relative;width:116px;height:116px;margin:4px auto 24px;display:flex;align-items:center;justify-content:center}
+.wl-spin::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 40%,color-mix(in srgb,var(--accent) 35%,transparent) 70%,var(--accent) 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3.5px));animation:spin 1.15s linear infinite}
+#welcome .wl-spin .logo{margin:0;animation:breathe 2.4s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(.9)}}
+.wl-dots{display:inline-block;width:1.3em;text-align:left}
+.wl-dots::after{content:'';animation:dots 1.6s steps(1,end) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+#wStep{transition:opacity .25s;min-height:1.75em}
+@media (prefers-reduced-motion: reduce){.wl-spin::before{animation-duration:3s}#welcome .wl-spin .logo{animation:none}}
+#jwDlg .form{grid-template-columns:64px minmax(0,1fr)}
+.captcha{height:36px;width:110px;border-radius:8px;border:1px solid var(--line);cursor:pointer;background:#fff;flex:none}
+.jw-checks{display:flex;flex-direction:column;gap:8px;margin-top:16px;font-size:13px;color:var(--sub)}
+.jw-checks label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.jw-err{min-height:20px;margin:14px 0 0;color:#b8432c;font-size:13.5px}
+.jw-loading{display:flex;align-items:center;gap:10px;color:var(--sub);padding:18px 0}
+.spin{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.import-hint{display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px 18px;border-radius:16px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
+.import-hint .tx{flex:1}
+.import-hint b{display:block;font-size:14.5px}
+.pin-demo{position:relative;height:150px;border-radius:14px;background:linear-gradient(160deg,#dfe7f2,#c9d6e8);overflow:hidden}
+.pin-bar{position:absolute;left:0;right:0;bottom:0;height:42px;background:rgba(245,247,250,.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;gap:12px;border-top:1px solid rgba(255,255,255,.7)}
+.pin-bar span{width:26px;height:26px;border-radius:7px;background:rgba(40,50,70,.18)}
+.pin-bar span.me{background:none;position:relative;box-shadow:0 0 0 3px var(--accent);border-radius:8px}
+.pin-bar .logo{display:block;width:26px;height:26px}
+.pin-menu{position:absolute;left:50%;bottom:50px;transform:translateX(-30%);width:170px;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(20,30,50,.22);padding:6px;font-size:13px;color:#1f1e1b}
+.pin-menu div{padding:6px 10px;border-radius:6px;display:flex;align-items:center;gap:8px}
+.pin-menu div:first-child{color:#8a877e;font-size:12px}
+.pin-menu .on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.pin-menu svg.i{width:15px;height:15px}
+.pin-steps{margin:16px 0 0;padding-left:20px;color:var(--sub);line-height:1.9}
+#toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,10px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:13.5px;opacity:0;transition:.25s;pointer-events:none;max-width:80vw;z-index:99;box-shadow:0 8px 30px rgba(0,0,0,.18)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ========== 换日期 / 换月的切换动画 ========== */
+.anim-l{animation:slideL .32s cubic-bezier(.2,.75,.2,1)}
+.anim-r{animation:slideR .32s cubic-bezier(.2,.75,.2,1)}
+.anim-up{animation:fadeUp .28s ease}
+@keyframes slideL{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes slideR{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.anim-l,.anim-r,.anim-up{animation:none}}
+/* "回到今天"：离开今天 / 本月时才出现 */
+.back-today{margin-left:8px;padding:2px 10px;font-size:12px;border-radius:99px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));color:var(--accent);background:var(--accent-soft);visibility:hidden}
+.back-today.on{visibility:visible;animation:fadeUp .2s ease}
+.seg button.back-on{color:var(--accent);font-weight:600}
+
+/* ========== 首页搜索 ========== */
+.hsearch{position:relative;width:240px;margin:22px auto 0;transition:width .35s cubic-bezier(.2,.75,.2,1);z-index:31}
+.hs-box{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 70%,transparent);color:var(--muted);cursor:text;transition:box-shadow .3s,background .3s,border-color .3s}
+.hs-box svg.i{width:16px;height:16px;flex:none}
+.hs-box input{flex:1;min-width:0;border:0;background:transparent;padding:0;height:100%;box-shadow:none;font-size:14px}
+.hs-box input:focus{box-shadow:none}
+.hs-box kbd{font:11px var(--sans);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 5px;flex:none}
+body.searching .hsearch{width:min(560px,90%)}
+body.searching .hs-box{background:var(--panel);border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:0 18px 50px rgba(20,18,12,.22),0 0 0 4px var(--accent-soft);height:46px}
+body.searching .hs-box kbd{display:none}
+.hs-results{position:absolute;left:0;right:0;top:54px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(20,18,12,.22);padding:6px;max-height:340px;overflow:auto;display:none}
+body.searching .hs-results.has{display:block;animation:fadeUp .2s ease}
+.hs-results.up{top:auto;bottom:54px}
+.hs-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer}
+.hs-item.on,.hs-item:hover{background:var(--hover)}
+.hs-item .k{font-size:11px;padding:1px 7px;border-radius:99px;background:var(--line2);color:var(--sub);flex:none}
+.hs-item .tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hs-item .sb{font-size:12px;color:var(--muted);flex:none;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hs-empty{padding:14px;text-align:center;color:var(--muted);font-size:13px}
+.hs-item.ai .k{background:var(--accent-soft);color:var(--accent)}
+.hs-item.add .k{background:color-mix(in srgb,var(--c-event) 18%,transparent);color:var(--c-event)}
+.hs-item.ai .tt{color:var(--accent)}
+.hs-ai{margin:2px 2px 8px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--accent-soft) 55%,transparent);border:1px solid color-mix(in srgb,var(--accent) 18%,var(--line))}
+.hs-ai-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.hs-ai-h .k{font-size:11px;padding:1px 7px;border-radius:99px;background:var(--accent);color:#fff}
+.hs-ai-h b{flex:1;font-size:13px}
+.hs-ai-b{font-size:13.5px;line-height:1.7}
+.hs-ai-b p{margin:0 0 4px}.hs-ai-b h4{margin:6px 0 2px;font-size:13.5px}.hs-ai-b .li{padding-left:12px;position:relative}
+.hs-ai-b .li::before{content:'';position:absolute;left:2px;top:.75em;width:4px;height:4px;border-radius:50%;background:var(--muted)}
+/* 虚化层：只虚化搜索框周围一个椭圆，越靠近越模糊，往外逐渐变清楚；窗口四周不虚化（--cx --cy 是虚化中心） */
+.hs-veil{position:fixed;inset:0;z-index:30;pointer-events:none;opacity:0;transition:opacity .35s;--rx:min(44vw,480px);--ry:min(34vh,300px)}
+body.searching .hs-veil{opacity:1;pointer-events:auto}
+.hs-veil i{position:absolute;inset:0}
+.hs-veil i:nth-child(1){backdrop-filter:blur(3px);background:color-mix(in srgb,var(--bg) 22%,transparent);-webkit-mask:radial-gradient(ellipse var(--rx) var(--ry) at var(--cx,50%) var(--cy,50%),#000 0,#000 50%,transparent 100%)}
+.hs-veil i:nth-child(2){backdrop-filter:blur(5px);-webkit-mask:radial-gradient(ellipse calc(var(--rx) * .72) calc(var(--ry) * .72) at var(--cx,50%) var(--cy,50%),#000 0,#000 35%,transparent 100%)}
+.hs-veil i:nth-child(3){backdrop-filter:blur(9px);-webkit-mask:radial-gradient(ellipse calc(var(--rx) * .48) calc(var(--ry) * .48) at var(--cx,50%) var(--cy,50%),#000 0,#000 25%,transparent 100%)}
+
+/* ========== 新建日程：AI 自动识别 ========== */
+.ev-ai{border-radius:14px;padding:12px 14px 14px;background:linear-gradient(135deg,var(--accent-soft),color-mix(in srgb,var(--accent-soft) 30%,var(--panel)));border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));margin:-4px 0 4px}
+.ev-ai-h{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--accent);font-size:13.5px;margin-bottom:8px}
+.ev-ai-h svg.i{width:16px;height:16px}
+.ev-ai-state{margin-left:auto;font-weight:400;font-size:12px;color:var(--sub)}
+.ev-ai input{width:100%;font-size:15.5px;padding:11px 13px;border-color:color-mix(in srgb,var(--accent) 25%,var(--line))}
+.ev-or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:14px 0 12px}
+.ev-or::before,.ev-or::after{content:'';flex:1;height:1px;background:var(--line2)}
+
+/* ========== 设置：保存条 / AI 高级 ========== */
+#v-settings{padding-bottom:0}
+.save-bar{position:sticky;bottom:16px;z-index:5;max-width:760px;margin:18px 0 18px;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 18px;border-radius:16px;background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 34px rgba(20,18,12,.16);transition:border-color .2s,box-shadow .2s}
+.save-bar svg.i{color:var(--muted);flex:none}
+.save-bar .sb-tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.45}
+.save-bar .sb-tx b{font-size:13.5px}
+.save-bar.dirty{border-color:var(--accent);box-shadow:0 10px 34px rgba(20,18,12,.16),0 0 0 4px var(--accent-soft)}
+.save-bar.dirty svg.i,.save-bar.dirty b{color:var(--accent)}
+button.accent-btn{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:9px 20px}
+button.accent-btn:hover{background:var(--accent);opacity:.9}
+.save-bar.dirty .accent-btn{animation:nudge 1.6s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:none}50%{transform:scale(1.05)}}
+.ai-status{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line2)}
+.ai-dot{width:9px;height:9px;border-radius:50%;background:#4f9a62;flex:none;box-shadow:0 0 0 3px color-mix(in srgb,#4f9a62 20%,transparent)}
+.ai-status.off .ai-dot{background:#c9a13b;box-shadow:0 0 0 3px color-mix(in srgb,#c9a13b 20%,transparent)}
+details.adv{margin-top:14px}
+details.adv summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;color:var(--sub);user-select:none}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary .arrow{width:15px;height:15px;transition:transform .2s;color:var(--muted)}
+details.adv[open] summary .arrow{transform:rotate(90deg)}
+details.adv summary .hint{font-weight:400}
+/* 确认框 */
+#askDlg{width:420px;text-align:center}
+.ask-icon{width:46px;height:46px;border-radius:50%;margin:0 auto 14px;background:#f7dcd5;color:#b8432c;font:700 24px/46px var(--sans)}
+:root[data-theme="dark"] .ask-icon{background:#4a2a22;color:#f0a38d}
+#askDlg h3{margin-bottom:10px}
+.ask-body{color:var(--sub);text-align:left;line-height:1.8;font-size:13.5px}
+.ask-body ul{margin:8px 0 0;padding-left:20px}
+#askDlg .dlg-btns{justify-content:center}
+#askDlg .dlg-btns button{min-width:110px}
+
+/* ========== 课程表：现在时间线 + 自己的日程 ========== */
+.tt-grid{position:relative}
+.tt-ov{position:absolute;inset:0;pointer-events:none}
+.tt-ev{position:absolute;pointer-events:auto;cursor:pointer;border-radius:8px;padding:3px 7px;font-size:11.5px;line-height:1.35;overflow:hidden;border:1.5px dashed currentColor;background:color-mix(in srgb,currentColor 13%,var(--panel));z-index:2;transition:transform .12s}
+.tt-ev:hover{transform:translateY(-1px);z-index:3}
+.tt-ev b{display:block;color:var(--text);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-ev span{color:var(--sub)}
+.tt-ev.done{opacity:.55}
+.tt-ev.done b{text-decoration:line-through}
+.tt-allday{display:block;max-width:92%;margin-top:2px;font-size:10.5px;line-height:16px;padding:0 6px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;background:color-mix(in srgb,currentColor 14%,transparent)}
+.tt-allday b{color:var(--text);font-weight:500}
+.tt-now{position:absolute;height:0;border-top:1px solid color-mix(in srgb,#e8743b 45%,transparent);z-index:4}
+.tt-now.today{border-top:2px solid #e8743b;margin-top:-.5px}
+.tt-now.today::before{content:'';position:absolute;left:-5px;top:-6px;width:10px;height:10px;border-radius:50%;background:#e8743b}
+.tt-now-tm{position:absolute;left:4px;transform:translateY(-50%);background:#e8743b;color:#fff;font-size:10.5px;font-weight:600;padding:1px 5px;border-radius:5px;z-index:5;font-variant-numeric:tabular-nums}
+.sync-at{font-size:12px;color:var(--muted);white-space:nowrap}
+
+@media (max-width:980px){
+  aside{width:64px;padding:18px 8px}
+  nav a span,.side-label,.me .info,#sideToggle{display:none}
+  .brand{padding:2px 8px 22px}
+  .view{padding:26px 22px 40px}
+  .cal-wrap{grid-template-columns:1fr;height:auto}
+  .month{height:600px}
+  .two,.steps,.mini-wrap{grid-template-columns:1fr}
+  .mini{border-right:0;border-bottom:1px solid var(--line2)}
+  .hello h1{font-size:32px}
+}
+</style>
+</head>
+<body>
+<div class="titlebar" id="titlebar">
+  <svg class="tb-glow" viewBox="0 0 220 80" aria-hidden="true">
+    <defs>
+      <!-- 低饱和的陶土橙，和软件的强调色是一家 -->
+      <linearGradient id="tbFill" x1="1" y1="0" x2="0" y2=".7">
+        <stop offset="0" stop-color="#D2683F"/><stop offset=".5" stop-color="#E0906A"/><stop offset="1" stop-color="#EDBB9B" stop-opacity=".7"/>
+      </linearGradient>
+      <filter id="tbBlur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="7"/></filter>
+      <filter id="tbBlur2" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="4"/></filter>
+    </defs>
+    <!-- 外面一层：左端贴着窗口顶，往下弯出一道弧，再缓缓抬向右边 -->
+    <path d="M44 -30 L42 -3 C62 1 76 25 108 30 C144 35 186 30 250 23 L250 -30 Z" fill="url(#tbFill)" filter="url(#tbBlur)" opacity=".85"/>
+    <!-- 里面一层：按钮后面颜色更实，白色图标看得清 -->
+    <path d="M100 -20 L100 -2 C116 4 128 20 154 21 C180 22 212 18 250 14 L250 -20 Z" fill="#D46E45" filter="url(#tbBlur2)" opacity=".7"/>
+  </svg>
+  <div class="tb-btns">
+    <button data-w="min" title="最小化"><svg viewBox="0 0 12 12"><path d="M2 6.5h8"/></svg></button>
+    <button data-w="max" title="最大化 / 还原"><svg class="ic-max" viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="1.6"/></svg><svg class="ic-restore" viewBox="0 0 12 12"><rect x="2" y="3.6" width="6.4" height="6.4" rx="1.4"/><path d="M4 3.6V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-.6"/></svg></button>
+    <button data-w="close" class="tb-close" title="关闭"><svg viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></button>
+  </div>
+</div>
+<aside>
+  <div class="brand"><div class="logo"></div><button class="icon-btn" id="sideToggle" title="收起侧边栏"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16M5.5 8h1M5.5 11h1"/></svg></button></div>
+  <nav>
+    <span class="nav-pill" id="navPill"></span>
+    <a data-v="home" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span>首页</span></a>
+    <a data-v="calendar"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>日历</span></a>
+    <a data-v="courses"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 9v12M15 9v12"/></svg><span>课程表</span></a>
+    <a data-v="todo"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><span>待办</span></a>
+    <a data-v="grades"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>考试成绩</span></a>
+    <div class="side-label">工具</div>
+    <a data-v="audio"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>录课笔记</span></a>
+    <a data-v="chat"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>聊天识别</span></a>
+    <a data-v="widgets"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7.5" height="9" rx="2"/><rect x="13" y="3.5" width="7.5" height="5" rx="2"/><rect x="13" y="10.5" width="7.5" height="10" rx="2"/><rect x="3.5" y="14.5" width="7.5" height="6" rx="2"/></svg><span>桌面小组件</span></a>
+    <a data-v="settings"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>设置</span></a>
+  </nav>
+  <div class="me" id="meBtn"><div class="avatar" id="avatar">同</div><div class="info"><div class="nm" id="meName">同学</div><div class="sc">河北传媒学院</div></div></div>
+</aside>
+
+<main>
+<button class="icon-btn" id="sideShow" title="展开侧边栏"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16M5.5 8h1M5.5 11h1"/></svg></button>
+<!-- 首页：问好 + 小日历 + 选中那天的安排 -->
+<section class="view on" id="v-home">
+  <div class="home">
+    <div class="hello"><div class="logo"></div><h1 class="serif" id="hello"></h1></div>
+    <p class="hello-sub" id="helloSub"></p>
+    <div class="import-hint" id="importHint" style="display:none;margin:0 0 18px">
+      <svg class="i" viewBox="0 0 24 24" style="width:26px;height:26px;color:var(--accent)"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 9v12"/></svg>
+      <div class="tx"><b>还没有导入你的课表</b><span class="hint">用学号登录教务系统，课表、考试安排和成绩一起同步过来。</span></div>
+      <button class="primary" data-jw-import>导入课表</button>
+    </div>
+    <div class="card mini-wrap">
+      <div class="mini">
+        <div class="mini-h"><b class="serif" id="miniTitle"></b><button class="back-today" id="miniToday">回到今天</button><div class="grow"></div><button class="icon-btn" id="miniPrev" title="上个月">‹</button><button class="icon-btn" id="miniNext" title="下个月">›</button></div>
+        <div class="mini-grid" id="miniGrid"></div>
+      </div>
+      <div class="mini-ag">
+        <div class="card-h"><h3 id="miniAgTitle"></h3><span class="hint" id="miniAgMeta"></span><span class="link" id="miniAdd">+ 新建</span></div>
+        <div id="miniAgenda"></div>
+      </div>
+    </div>
+    <div class="chips">
+      <button data-jw-import><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 9v12"/></svg>导入课表</button>
+      <button data-go="audio"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>录课笔记</button>
+      <button data-go="chat"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>识别聊天记录</button>
+      <button data-go="todo"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>待办</button>
+      <button data-go="calendar"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>查看日历</button>
+    </div>
+    <!-- 搜索：平时是个小框，点一下展开，周围虚化 -->
+    <div class="hsearch" id="hsearch">
+      <div class="hs-box">
+        <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="text" id="hsInput" placeholder="搜索" autocomplete="off" spellcheck="false">
+        <kbd data-mac="⌘ K">Ctrl K</kbd>
+      </div>
+      <div class="hs-results" id="hsResults"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 日历：月历 + 当天安排 + 待办 -->
+<section class="view" id="v-calendar">
+  <div class="page-h">
+    <div><h1 class="serif" id="calTitle"></h1><p class="hint" id="calSub"></p></div>
+    <div class="grow"></div>
+    <span class="sync-at" id="calSyncAt" style="display:none"></span>
+    <button id="calSync" style="display:none" title="和学校门户的「我的日历」同步">同步</button>
+    <div class="seg"><button id="prevM" title="上个月">‹</button><button id="todayBtn">今天</button><button id="nextM" title="下个月">›</button></div>
+    <button class="primary" id="addEv">新建日程</button>
+  </div>
+  <div class="cal-wrap">
+    <div class="month" id="month"></div>
+    <div class="side-col">
+      <div class="card">
+        <div class="card-h"><h3 id="agTitle"></h3><span class="hint" id="agMeta"></span></div>
+        <div id="agenda"></div>
+        <div class="legend"><span><i style="background:var(--c-course)"></i>课程</span><span><i style="background:var(--c-task)"></i>作业/考试</span><span><i style="background:var(--c-event)"></i>活动</span><span><i style="background:var(--c-other)"></i>其他</span></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>待办</h3><span class="hint" id="homeTodoMeta"></span><span class="link" data-go="todo">全部</span></div>
+        <div id="homeTodo"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 待办 -->
+<section class="view" id="v-todo">
+  <div class="page-h">
+    <div><h1 class="serif">待办</h1><p class="hint" id="todoSub"></p></div>
+    <div class="grow"></div>
+    <button class="primary" id="addTodo">新建待办</button>
+  </div>
+  <div class="todo-wrap" id="todoList"></div>
+</section>
+
+<!-- 考试成绩 -->
+<section class="view" id="v-grades">
+  <div class="page-h">
+    <div><h1 class="serif">考试成绩</h1><p class="hint" id="grSub"></p></div>
+    <div class="grow"></div>
+    <span class="sync-at" id="grSyncAt"></span>
+    <button class="primary" id="grSync">同步考试和成绩</button>
+  </div>
+  <div class="two">
+    <div class="card">
+      <div class="card-h"><h3>成绩</h3><span class="hint" id="grMeta"></span></div>
+      <div class="stats" id="grStats"></div>
+      <div class="seg" id="grTerms" style="margin-bottom:10px;flex-wrap:wrap"></div>
+      <div id="grList"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>考试安排</h3><span class="hint">同步后自动加入日历和待办</span></div>
+      <div id="exList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 课程表 -->
+<section class="view" id="v-courses">
+  <div class="page-h">
+    <div><h1 class="serif">课程表</h1><p class="hint" id="wkSub"></p></div>
+    <div class="grow"></div>
+    <div class="seg"><button id="prevW" title="上一周">‹</button><button id="thisW">本周</button><button id="nextW" title="下一周">›</button></div>
+    <button id="addCourse">添加课程</button>
+    <span class="sync-at" id="kbSyncAt"></span>
+    <button class="primary" data-jw-import>从教务系统同步课表</button>
+  </div>
+  <div class="other-note" id="otherNote" style="display:none"></div>
+  <div class="tt-grid" id="ttGrid"></div>
+  <details class="imp card" id="impBox">
+    <summary><svg class="i arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>其他导入方式<span class="hint" style="font-family:var(--sans)">登录导入不成功时再用</span></summary>
+    <div class="steps">
+      <div class="step">
+        <h4>在网页里登录后抓取</h4>
+        <p class="hint">在弹出的窗口里登录学校门户，进入「教务系统」，再回来点抓取。</p>
+        <div class="row"><button id="jwOpen">① 打开教务系统</button><button id="jwGrab">② 抓取课表</button></div>
+      </div>
+      <div class="step">
+        <h4>粘贴导入</h4>
+        <p class="hint">每行一门课：课程名, 老师, 教室, 周一, 1-2节, 1-16周。也支持教务系统接口的 JSON。</p>
+        <textarea id="impText" rows="3" placeholder="影视剪辑基础, 王老师, 实验楼305, 周二, 3-4节, 1-16周"></textarea>
+        <div class="row" style="margin-top:10px"><button class="primary" id="impBtn">解析并导入</button></div>
+      </div>
+    </div>
+    <div class="card-h" style="margin-top:22px"><h3>全部课程</h3><span class="hint" id="cCount"></span><span class="link" id="clrCourses" style="color:#b8432c">清空课表</span></div>
+    <div id="courseList"></div>
+  </details>
+</section>
+
+<!-- 录课转文字 -->
+<section class="view" id="v-audio">
+  <div class="page-h"><div><h1 class="serif">录课笔记</h1><p class="hint">直接录音或导入录音文件，在本机离线转成文字，再让 AI 整理成笔记</p></div></div>
+  <div class="two">
+    <div class="card">
+      <input type="file" id="audioFile" accept="audio/*,video/*" hidden>
+      <!-- 一键录音（主要） -->
+      <div class="rec-hero">
+        <button class="rec-big" id="recBtn" title="用电脑麦克风录课"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <div class="rec-title" id="recLabel">一键录音</div>
+        <div class="hint" id="recState">用电脑麦克风录课，录完自动转成文字</div>
+      </div>
+      <!-- 导入文件（次要） -->
+      <div class="drop" id="drop" title="点击选择，或者把文件拖到这里">
+        <svg class="i" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        <span class="t" id="dropName">或者导入录音、视频文件</span>
+        <span class="hint" id="dropSub">mp3、m4a、wav、mp4 等，手机录的也可以</span>
+      </div>
+      <audio id="player" controls style="width:100%;margin-top:14px;display:none"></audio>
+      <div class="row" style="margin-top:14px"><button class="primary" id="asrBtn">开始识别</button><button class="ghost" id="asrCancel" style="display:none">取消</button></div>
+      <div id="asrProg" style="display:none"><div class="prog"><i></i></div><span class="hint" id="asrProgText">正在加载识别模型…</span></div>
+      <div class="card-h" style="margin-top:22px"><h3>识别结果</h3><span class="hint">可以修改，也可以直接粘贴文字</span></div>
+      <textarea id="transcript" rows="14" placeholder="识别出的文字会一句一句出现在这里，前面带录音里的时间点"></textarea>
+      <div class="row" style="margin-top:12px"><button class="primary" id="saveNote">保存</button><button id="copyText">复制全文</button><button id="findTasks">找出作业 / 考试</button></div>
+      <div class="cands" id="audioCands"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card">
+        <div class="card-h"><h3>AI 课堂笔记</h3><span class="hint" id="aiNoteHint"></span></div>
+        <div class="md" id="aiNoteOut"><div class="empty">识别完成后点「生成笔记」，AI 会整理出要点、重点概念和老师强调的内容</div></div>
+        <div class="row" style="margin-top:12px"><button class="primary" id="aiNoteBtn">生成笔记</button><button class="ghost" id="aiNoteStop" style="display:none">停止</button><button id="aiNoteCopy" style="display:none">复制笔记</button></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>历史记录</h3></div><input type="search" id="noteQ" placeholder="搜索笔记，比如：期中" style="width:100%;margin-bottom:8px"><div id="notes"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 聊天识别 -->
+<section class="view" id="v-chat">
+  <div class="page-h"><div><h1 class="serif">聊天识别</h1><p class="hint">把班级群、QQ、微信的聊天记录复制进来，自动找出时间和事项</p></div></div>
+  <div class="two">
+    <div class="card">
+      <div class="row" style="margin-bottom:12px"><span class="hint">参考日期</span><input type="date" id="refDate"><span class="hint">"明天""周五"以这天为准</span></div>
+      <textarea id="chatText" rows="16" placeholder="班长 2026/10/20 09:12&#10;@所有人 明天下午3点在演播厅开班会，不要迟到&#10;学委：新闻写作的采访稿周五晚上10点前交到邮箱&#10;下周三上午第3节摄影课调到实验楼205"></textarea>
+      <div class="row" style="margin-top:12px"><button class="primary" id="chatLocal">开始识别</button><button id="chatAi">AI 识别</button><button class="ghost" id="chatAiStop" style="display:none">停止</button><span class="hint" id="chatAiHint"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>识别结果</h3><span class="hint">勾选后加入日历，可以先改再加</span></div>
+      <div class="cands" id="chatCands"><div class="empty">还没有识别结果</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 桌面小组件：我的小组件（选中一个调整）+ 可以添加的各种小组件 -->
+<section class="view" id="v-widgets">
+  <div class="page-h"><div><h1 class="serif">桌面小组件</h1><p class="hint">挑几个放到桌面上。在桌面上按住小组件可以拖到别处；鼠标放上去点右上角的笔，就回到这里调整</p></div><div class="grow"></div>
+    <label class="row" style="gap:8px"><input type="checkbox" id="wgShow">在桌面上显示</label></div>
+  <div class="card wg-mine" id="wgMine"></div>
+  <div class="wg-sec"><h2 class="serif">添加小组件</h2><span class="hint">点「添加到桌面」，新的小组件会出现在屏幕右上角</span></div>
+  <div class="wg-gallery" id="wgGallery"></div>
+</section>
+
+<!-- 设置 -->
+<section class="view" id="v-settings">
+  <div class="page-h"><div><h1 class="serif">设置</h1></div></div>
+  <div class="set">
+    <section>
+      <h2>个人资料</h2>
+      <div class="form"><label>昵称</label><div><input type="text" id="sName" placeholder="比如：小王" maxlength="12" style="width:100%"><p class="hint" id="sNameHint" style="margin:6px 0 0"></p></div></div>
+    </section>
+    <section>
+      <h2>外观</h2>
+      <div class="form"><label>颜色主题</label><div><div class="seg" id="themeSeg"><button data-t="light">浅色</button><button data-t="dark">深色</button><button data-t="system">跟随系统</button></div></div></div>
+    </section>
+    <section>
+      <h2>学期与作息</h2>
+      <div class="form">
+        <label>开学日期</label><input type="date" id="sTerm" style="max-width:200px">
+        <label>总周数</label><input type="number" id="sWeeks" min="1" max="30" style="max-width:120px">
+        <label>教务系统地址</label><input type="text" id="sJw" placeholder="https://portal.hebic.cn/personal-center">
+        <label class="top">每节课时间</label><div><textarea id="sSecs" rows="6" placeholder="一行一节，如 08:00-08:45"></textarea><p class="hint" style="margin:6px 0 0">一行一节。从教务系统抓取课表时会自动同步</p></div>
+      </div>
+    </section>
+    <section>
+      <h2>提醒</h2>
+      <p class="hint" style="margin:-6px 0 14px" data-mac="到时间在屏幕右上角弹出通知。软件要开着（缩到菜单栏也算）才能提醒。">到时间在屏幕右下角弹出通知。软件要开着（缩到托盘也算）才能提醒。</p>
+      <div class="form">
+        <label>上课</label><div class="row">上课前 <input type="number" id="rCourse" min="0" max="120" style="width:76px"> 分钟 <span class="hint">填 0 就不提醒</span></div>
+        <label>作业 / 考试</label><div class="row"><label class="row" style="gap:6px;color:var(--text)"><input type="checkbox" id="rTaskEve">前一天</label><input type="time" id="rTaskEveAt" style="width:116px"><span style="width:10px"></span><label class="row" style="gap:6px;color:var(--text)"><input type="checkbox" id="rTaskDay">截止前</label><input type="number" id="rTaskHours" min="1" max="24" style="width:66px"> 小时</div>
+        <label>活动</label><div class="row">开始前 <input type="number" id="rEvent" min="0" max="240" style="width:76px"> 分钟 <span class="hint">填 0 就不提醒</span></div>
+      </div>
+      <div class="row" style="margin-top:14px"><button id="rTest">发一条测试提醒</button><span class="hint">改完自动保存</span></div>
+    </section>
+    <section>
+      <h2>启动</h2>
+      <div class="jw-checks" style="margin-top:0">
+        <label><input type="checkbox" id="pAuto"> 开机自动启动（在后台运行，不弹窗口，到时间照样提醒）</label>
+        <label><input type="checkbox" id="pTray"> <span data-mac="关闭窗口时缩到屏幕顶部菜单栏，不退出（这样才能继续提醒）">关闭窗口时缩到右下角托盘，不退出（这样才能继续提醒）</span></label>
+        <label><input type="checkbox" id="pPet"> 在桌面上显示桌宠（把微信、钉钉里的聊天文字拖给它，自动找出日程）</label>
+        <div class="row" style="padding-left:24px;gap:8px"><span class="hint">桌宠大小</span><div class="seg" id="pPetSize"><button data-s="s">小</button><button data-s="m">中</button><button data-s="l">大</button></div></div>
+        <label><input type="checkbox" id="pWidget"> 在桌面上显示小组件（时钟、下一节课、待办、月历……可以放好几个）</label>
+        <div class="row" style="padding-left:24px"><button id="pWidgetEdit">管理桌面小组件…</button><span class="hint">也在左边「工具 → 桌面小组件」里</span></div>
+      </div>
+    </section>
+    <section>
+      <h2>AI 功能</h2>
+      <p class="hint" style="margin:-6px 0 14px">用于 AI 课堂笔记、AI 识别日程和聊天记录。录音识别仍然在本机进行；使用 AI 时，转写出的文字或聊天记录会发给 AI 服务。</p>
+      <div class="ai-status"><span class="ai-dot"></span><span id="aiState"></span><div class="grow"></div><button id="aiTest">测试连接</button></div>
+      <!-- 二级：一般不用动 -->
+      <details class="adv" id="aiAdv">
+        <summary><svg class="i arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>高级<span class="hint">换 AI 服务、填自己的 Key、本地识别模型说明，一般不需要改</span></summary>
+        <div class="form" style="margin-top:14px">
+          <label>AI 服务</label><select id="aiPreset" style="max-width:300px"></select>
+          <label>接口地址</label><input type="text" id="aiBase" placeholder="https://…/v1" autocomplete="off">
+          <label>模型名</label><input type="text" id="aiModel" placeholder="从服务商控制台复制" autocomplete="off">
+          <label>API Key</label><div class="row" style="flex-wrap:nowrap"><input type="password" id="aiKey" style="flex:1;min-width:0" autocomplete="off"><span class="link" id="aiGetKey" style="margin-left:0;white-space:nowrap">去申请 Key</span></div>
+        </div>
+        <p class="hint" style="margin:10px 0 0">软件已经内置了智谱的免费 Key，不用设置就能用。用的人多时可能要排队；想更稳定，可以填自己的 Key（加密保存在这台电脑上，不会出现在导出的备份里）。</p>
+        <div class="row" style="margin-top:14px"><button id="aiSave">保存 AI 设置</button><button class="ghost danger" id="aiClear">改回内置 Key</button></div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
+          <p style="margin:0 0 6px"><b>本地语音识别</b></p>
+          <p style="margin:0 0 6px">已内置 SenseVoice Small 识别模型（阿里开源，int8 量化版），完全在本机运行。</p>
+          <p class="hint" style="margin:0">不联网、不收费，录音不会上传。识别时大约占用 400MB 内存，识别完自动释放。</p>
+        </div>
+      </details>
+    </section>
+    <section>
+      <h2>多设备同步</h2>
+      <p class="hint" style="margin:-6px 0 14px">把自己加的日程和待办同步到学校门户的「我的日历」。日程存在学校服务器上，跟着学号走：别的电脑装上这个软件、登录同一个学号、在这里打开同步，就能拿回来；在门户网页上加的日程也会同步过来。课程和考试不传（每台电脑都从教务系统同步）。</p>
+      <div class="jw-checks" style="margin-top:0">
+        <label><input type="checkbox" id="ptOn"> 和学校门户的日历同步（打开软件、改了日程后自动同步，每 15 分钟再看一次）</label>
+      </div>
+      <div class="row" style="margin-top:12px"><button id="ptNow">现在同步</button><span class="sync-at" id="ptAt"></span></div>
+    </section>
+    <section>
+      <h2>数据</h2>
+      <div class="row" style="margin-bottom:12px"><button id="jwLogout">退出教务系统登录</button><span class="hint">清除登录状态和保存的学号密码，换人用或者在公共电脑上用完记得点</span></div>
+      <div class="row"><button id="exportData">导出备份</button><button id="importBtn">导入备份</button><input type="file" id="importFile" accept=".json" hidden><div class="grow"></div><button class="danger" id="resetData">清空所有数据</button></div>
+    </section>
+  </div>
+  <!-- 保存条：一直贴在窗口底部；改了没保存时高亮 -->
+  <div class="save-bar" id="saveBar">
+    <svg class="i" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>
+    <div class="sb-tx"><b id="saveTitle">个人资料、学期与作息</b><span class="hint" id="saveHint">改完点右边保存；其他设置改了会自动保存</span><span class="hint" id="modeHint"></span></div>
+    <button class="accent-btn" id="saveSet">保存设置</button>
+  </div>
+</section>
+</main>
+
+<!-- 欢迎 -->
+<!-- 第一次打开：登录 → 正在为你定制 → 你好，小明（登不上可以先手动填称呼） -->
+<dialog id="welcome">
+  <div class="wl-pane on" data-p="login">
+    <div class="logo"></div>
+    <h3>你好，欢迎使用河传答哒</h3>
+    <p>用学号登录学校统一身份认证，<br>课表、考试和成绩一次同步好，顺便认识一下你。</p>
+    <div class="wl-form">
+      <input type="text" id="wUser" placeholder="学号" autocomplete="off">
+      <input type="password" id="wPass" placeholder="学校门户的登录密码">
+      <div class="row wl-code" style="flex-wrap:nowrap;display:none"><input type="text" id="wCode" placeholder="验证码（填右边图里的字）" maxlength="6" style="flex:1;min-width:0" autocomplete="off"><img id="wCaptcha" class="captcha" alt="验证码" title="看不清？点一下换一张"></div>
+      <label class="wl-rem"><input type="checkbox" id="wRemember" checked> 记住学号和密码（加密保存在这台电脑上）</label>
+    </div>
+    <p class="jw-err" id="wErr"></p>
+    <button class="primary wl-go" id="wLogin">登录并开始</button>
+    <span class="wl-skip" id="wSkip">先不登录，手动设置</span>
+  </div>
+  <div class="wl-pane" data-p="loading">
+    <div class="wl-spin"><div class="logo"></div></div>
+    <h3>正在为你定制<span class="wl-dots"></span></h3>
+    <p id="wStep"></p>
+  </div>
+  <div class="wl-pane" data-p="done">
+    <div class="logo"></div>
+    <h3 id="wHello"></h3>
+    <p id="wSum"></p>
+    <button class="primary wl-go" id="wStart">开始使用</button>
+  </div>
+  <div class="wl-pane" data-p="manual">
+    <div class="logo"></div>
+    <h3>怎么称呼你？</h3>
+    <p>以后可以在课程表页「导入课表」登录教务系统，<br>称呼也可以在「设置」里改。</p>
+    <input type="text" id="wName" placeholder="你的名字或昵称" maxlength="12">
+    <button class="primary wl-go" id="wGo">开始使用</button>
+    <span class="wl-skip" id="wBack">返回登录</span>
+  </div>
+</dialog>
+
+<!-- 登录教务系统 -->
+<dialog id="jwDlg">
+  <h3>从教务系统同步</h3>
+  <p class="hint" style="margin:-8px 0 18px">用登录学校门户（统一身份认证）的学号和密码。课表、考试安排、成绩、学期日期和上课时间会一起同步。</p>
+  <div id="jwLoading" class="jw-loading"><span class="spin"></span><span id="jwLoadingText">正在连接教务系统…</span></div>
+  <div id="jwForm" style="display:none">
+    <div class="form">
+      <label>学号</label><input type="text" id="jwUser" placeholder="一般是 12 位数字" autocomplete="off">
+      <label>密码</label><input type="password" id="jwPass" placeholder="学校门户的登录密码">
+      <label class="jw-code">验证码</label>
+      <div class="row jw-code" style="flex-wrap:nowrap">
+        <input type="text" id="jwCode" placeholder="填右边图里的字" maxlength="6" style="width:130px" autocomplete="off">
+        <img id="jwCaptcha" class="captcha" alt="验证码" title="看不清？点一下换一张">
+        <span class="link" id="jwRefresh" style="margin-left:0;white-space:nowrap">换一张</span>
+      </div>
+    </div>
+    <div class="jw-checks">
+      <label><input type="checkbox" id="jwRemember" checked> 记住学号和密码（加密保存在这台电脑上），下次点一下就能同步</label>
+    </div>
+  </div>
+  <p class="jw-err" id="jwErr"></p>
+  <div class="dlg-btns"><button id="jwCancel">取消</button><button class="primary" id="jwLogin">登录并导入</button></div>
+</dialog>
+
+<!-- 固定到任务栏的图示 -->
+<dialog id="pinDlg">
+  <h3>把河传答哒固定到任务栏</h3>
+  <p class="hint" style="margin:-8px 0 18px">Windows 不允许软件自己固定，需要你点一下，以后就能从任务栏一键打开。</p>
+  <div class="pin-demo">
+    <div class="pin-menu"><div>河传答哒</div><div class="on"><svg class="i" viewBox="0 0 24 24"><path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v7"/></svg>固定到任务栏</div><div>关闭窗口</div></div>
+    <div class="pin-bar"><span></span><span></span><span class="me"><i class="logo"></i></span><span></span></div>
+  </div>
+  <ol class="pin-steps"><li>在屏幕下方的任务栏里，找到河传答哒的图标</li><li>点鼠标<b>右键</b></li><li>选<b>「固定到任务栏」</b></li></ol>
+  <div class="dlg-btns"><button class="primary" id="pinOk">知道了</button></div>
+</dialog>
+
+<!-- 日程弹窗 -->
+<dialog id="evDlg">
+  <h3 id="evDlgTitle">新建日程</h3>
+  <!-- AI 自动识别：最主要的填法，下面的表格是"或者手动填" -->
+  <div class="ev-ai ev-quick">
+    <div class="ev-ai-h"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.9L12 17l-1.8-5.4L5 9.7l5.2-1.8zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>AI 自动识别<span class="ev-ai-state" id="evAiState"></span></div>
+    <input type="text" id="evQuick" placeholder="随口说，轻松记：周五晚上10点前交剪辑作业" autocomplete="off">
+  </div>
+  <div class="ev-or ev-quick"><span>或者手动填写</span></div>
+  <div class="form">
+    <label>标题</label><input type="text" id="evTitle">
+    <label>日期</label><input type="date" id="evDate">
+    <label>时间</label><div class="row"><input type="time" id="evStart"> 至 <input type="time" id="evEnd"></div>
+    <label>类型</label><select id="evType"><option value="task">作业 / 考试</option><option value="event">活动 / 会议</option><option value="other">其他</option></select>
+    <label class="top">备注</label><textarea id="evNote" rows="3"></textarea>
+  </div>
+  <div class="dlg-btns"><button class="danger l ghost" id="evDel">删除</button><button id="evCancel">取消</button><button class="primary" id="evSave">保存</button></div>
+</dialog>
+
+<!-- 课程弹窗 -->
+<dialog id="cDlg">
+  <h3 id="cDlgTitle">编辑课程</h3>
+  <div class="form">
+    <label>课程名</label><input type="text" id="cName">
+    <label>老师</label><input type="text" id="cTeacher">
+    <label>教室</label><input type="text" id="cRoom">
+    <label>星期</label><select id="cDay"></select>
+    <label>节次</label><div class="row">第 <input type="number" id="cStart" min="1" style="width:70px"> 至 <input type="number" id="cEnd" min="1" style="width:70px"> 节</div>
+    <label>周次</label><input type="text" id="cWeeks" placeholder="1-16周 / 1-15周(单) / 2,4,6周">
+  </div>
+  <div class="dlg-btns"><button class="danger l ghost" id="cDel">删除</button><button id="cCancel">取消</button><button class="primary" id="cSave">保存</button></div>
+</dialog>
+
+<!-- 重要操作的确认框（比如换成自己的 AI Key） -->
+<dialog id="askDlg">
+  <div class="ask-icon">!</div>
+  <h3 id="askTitle"></h3>
+  <div id="askBody" class="ask-body"></div>
+  <div class="dlg-btns"><button id="askNo">取消</button><button class="accent-btn" id="askYes">确定</button></div>
+</dialog>
+
+<!-- 搜索展开时的虚化层：三层模糊叠在一起，离搜索框越近越糊，越远越淡 -->
+<div class="hs-veil" id="hsVeil"><i></i><i></i><i></i></div>
+
+<div id="toast"></div>
+<script src="widget-kit.js"></script>
+
+<script>
+/* ========== 存储 ========== */
+const KEY = 'campus-assistant-v1';
+// 河北传媒学院作息时间（2026-2027 学年，教务系统读取）
+const DEF_SECTIONS = ['08:30-09:15','09:15-10:00','10:20-11:05','11:05-11:50','13:30-14:15','14:15-15:00','15:15-16:00','16:00-16:45','18:00-18:45','18:45-19:30','19:40-20:25','20:25-21:10'];
+
+function defaults() {
+  return {
+    events: [], courses: [], notes: [], exams: [], grades: [], fired: {},
+    settings: {
+      name: '', theme: 'light', sideOff: false,
+      termStart: '2026-08-31', totalWeeks: 19, sections: DEF_SECTIONS.slice(),
+      jwUrl: 'https://portal.hebic.cn/personal-center',
+      // 提醒：课前几分钟；作业考试前一天几点 + 截止前几小时；活动前几分钟
+      remind: { course: 10, taskEve: true, taskEveAt: '20:00', taskDay: true, taskHours: 2, event: 30 }
+    }
+  };
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const d = JSON.parse(raw), def = defaults();
+      const settings = { ...def.settings, ...(d.settings || {}) };
+      settings.remind = { ...def.settings.remind, ...(settings.remind || {}) };
+      return { ...def, ...d, settings };
+    }
+  } catch (e) {}
+  return null;
+}
+let dataTimer = 0;
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('保存失败：本地存储不可用'); }
+  // 告诉桌面小组件和桌宠：数据变了（连着改好几次只发一次）
+  clearTimeout(dataTimer);
+  dataTimer = setTimeout(() => window.desktop?.dataChanged?.(), 400);
+  ptSchedule();  // 开了门户同步：日程变了就自动同步
+}
+
+/* ========== 工具 ========== */
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const pad = n => String(n).padStart(2, '0');
+const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const dow = d => (d.getDay() + 6) % 7 + 1;  // 1=周一 … 7=周日
+const WD = ['', '一', '二', '三', '四', '五', '六', '日'];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const todayStr = () => fmt(new Date());
+const nowHM = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const TYPE_NAME = { course: '课程', task: '作业/考试', event: '活动', other: '其他' };
+const mdText = d => `${d.getMonth() + 1}月${d.getDate()}日`;
+
+function toast(msg, ms = 2600) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), ms);
+}
+function termMonday() { const t = parseD(S.settings.termStart); return addDays(t, -(dow(t) - 1)); }
+function termWeek(d) { return Math.floor(Math.round((d - termMonday()) / 864e5) / 7) + 1; }
+const inTerm = w => w >= 1 && w <= S.settings.totalWeeks;
+function secTime(i) { const s = S.settings.sections[i - 1] || ''; const [a, b] = s.split('-'); return [a || '', b || '']; }
+
+// 周次：每一段各自带单双周，如 "4-6周(双),7-17周" "6周,9周,15-17周(单)"
+function parseWeeks(str) {
+  const s = String(str || '').replace(/\s/g, ''), res = new Set();
+  for (const p of s.split(/[,，、]/)) {
+    const m = p.match(/(\d+)(?:[-~至](\d+))?/);
+    if (!m) continue;
+    const odd = /单/.test(p), even = /双/.test(p);
+    const a = +m[1], b = m[2] ? +m[2] : a;
+    for (let i = a; i <= b; i++) {
+      if (odd && i % 2 === 0) continue;
+      if (even && i % 2 === 1) continue;
+      res.add(i);
+    }
+  }
+  return [...res].sort((x, y) => x - y);
+}
+
+/* 某一天的全部条目：课表推算出的课程 + 自己的日程 */
+function itemsFor(ds) {
+  const d = parseD(ds), w = termWeek(d), wd = dow(d), list = [];
+  for (const c of S.courses) {
+    if (c.day !== wd || !c.weeks.includes(w)) continue;
+    const [a] = secTime(c.start), [, b] = secTime(c.end);
+    list.push({ kind: 'course', id: c.id, title: c.name, start: a, end: b, type: 'course', room: c.room || '',
+      sub: [c.room, c.teacher, `第${c.start}-${c.end}节`].filter(Boolean).join(' · ') });
+  }
+  for (const e of S.events) if (e.date === ds)
+    list.push({ kind: 'event', id: e.id, title: e.title, start: e.start || '', end: e.end || '', type: e.type || 'other', sub: e.note || '', done: !!e.done });
+  return list.sort((a, b) => (a.start || '00:00').localeCompare(b.start || '00:00'));
+}
+function openItem(kind, id) {
+  if (kind === 'course') openCourse(S.courses.find(c => c.id === id));
+  else openEvent(S.events.find(e => e.id === id));
+}
+function renderAll() { renderHome(); renderCalendar(); renderCourses(); renderTodo(); renderGrades(); }
+
+/* ========== 外观 / 称呼 ========== */
+function applyTheme() {
+  document.documentElement.dataset.theme = S.settings.theme || 'light';
+  window.desktop?.setTheme?.(S.settings.theme || 'light');  // 桌宠的气泡跟着变
+  $$('#themeSeg button').forEach(b => b.classList.toggle('on', b.dataset.t === (S.settings.theme || 'light')));
+}
+// 称呼：设置里填了昵称就用昵称；否则用教务系统里的名字，只叫名不叫姓（王小明 → 小明）
+const COMPOUND_SURNAMES = ['欧阳', '司马', '上官', '诸葛', '东方', '皇甫', '尉迟', '公孙', '慕容', '长孙', '宇文', '司徒', '夏侯', '轩辕', '令狐', '钟离', '端木', '南宫', '独孤', '西门', '百里', '呼延', '澹台', '公冶', '太史', '申屠', '闻人', '万俟', '司空', '拓跋', '第五'];
+function givenName(full) {
+  const n = String(full || '').trim();
+  if (!n) return '';
+  if (/[·•.]/.test(n)) return n.split(/[·•.]/)[0];          // 少数民族名字：取第一段
+  if (!/^[一-龥]+$/.test(n)) return n.split(/\s+/)[0]; // 不是纯汉字（外文名）：取第一个词
+  const sur = COMPOUND_SURNAMES.some(s => n.startsWith(s) && n.length >= 3) ? 2 : 1;
+  const g = n.slice(sur);
+  return g.length >= 2 ? g : n;  // 单字名（王明）叫全名更自然
+}
+function displayName() { return S.settings.name || givenName(S.settings.jwName) || '同学'; }
+function renderMe() {
+  $('#meName').textContent = displayName();
+  $('#avatar').textContent = displayName().slice(0, 1);
+}
+
+/* ========== 导航 ========== */
+const RENDER = { home: () => renderHome(), calendar: () => renderCalendar(), courses: () => renderCourses(), todo: () => renderTodo(), grades: () => renderGrades(), audio: () => renderNotes(), settings: () => fillSettings(), widgets: () => wgLoad() };
+const ORDER = [...$$('nav a')].map(a => a.dataset.v);
+let curView = 'home';
+function movePill() {
+  const a = $('nav a.on'), p = $('#navPill');
+  if (!a) return;
+  p.style.top = a.offsetTop + 'px';
+  p.style.height = a.offsetHeight + 'px';
+}
+function go(v) {
+  if (v === curView) return;
+  // 离开设置页时，改了没保存的自动保存（格式不对就停在设置页）
+  if (curView === 'settings' && setDirty && !saveSettings(true)) return;
+  document.body.classList.remove('searching');
+  const dir = ORDER.indexOf(v) > ORDER.indexOf(curView) ? 'in-up' : 'in-down';
+  curView = v;
+  $$('nav a').forEach(x => x.classList.toggle('on', x.dataset.v === v));
+  $$('.view').forEach(x => x.classList.remove('on', 'in-up', 'in-down'));
+  const el = $('#v-' + v);
+  void el.offsetWidth;  // 重新触发动画
+  el.classList.add('on', dir);
+  RENDER[v]?.();
+  movePill();
+  $('main').scrollTop = 0;
+}
+window.addEventListener('resize', movePill);
+$$('nav a').forEach(a => a.onclick = () => go(a.dataset.v));
+$$('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+$('#meBtn').onclick = () => go('settings');
+// 收起 / 展开侧边栏（记住状态）
+function setSide(off) {
+  document.body.classList.toggle('side-off', off);
+  S.settings.sideOff = off; save();
+  setTimeout(() => { movePill(); fitDays(); }, 280);
+}
+$('#sideToggle').onclick = () => setSide(true);
+$('#sideShow').onclick = () => setSide(false);
+
+/* ========== 首页：问好 + 小日历 + 选中那天的安排 ========== */
+function greeting() {
+  const h = new Date().getHours();
+  return h < 5 ? '夜深了' : h < 11 ? '早上好' : h < 13 ? '中午好' : h < 18 ? '下午好' : h < 23 ? '晚上好' : '夜深了';
+}
+function renderHome() {
+  const now = new Date(), hm = nowHM(), wk = termWeek(now);
+  const courses = itemsFor(todayStr()).filter(i => i.kind === 'course');
+  const nextC = courses.find(c => c.end > hm);
+  let tip;
+  if (!courses.length) tip = '今天没有课';
+  else if (!nextC) tip = '今天的课都上完了';
+  else if (nextC.start <= hm) tip = `正在上「${nextC.title}」，${nextC.end} 下课`;
+  else tip = `下一节是 ${nextC.start} 的「${nextC.title}」` + (nextC.room ? `，在${nextC.room}` : '');
+  $('#hello').textContent = `${greeting()}，${displayName()}`;
+  $('#helloSub').textContent = `${mdText(now)} 星期${WD[dow(now)]}` + (inTerm(wk) ? ` · 第 ${wk} 教学周` : '') + ` · ${tip}`;
+  $('#importHint').style.display = S.courses.length ? 'none' : '';
+  renderMini();
+}
+// 小日历：只有日期数字，有安排的日子下面带小圆点（课程 / 作业考试 / 活动 各一种颜色）
+// 切换动画：l/r 换月（从左/右滑进来），up 换日期（下面的安排淡入）
+function anim(el, cls) { if (!el) return; el.classList.remove('anim-l', 'anim-r', 'anim-up'); void el.offsetWidth; el.classList.add(cls); }
+// 选中的日期：默认是今天；今天的事都结束了就默认显示明天（selAuto）。用户点过别的日期就不再自动换
+let selAuto = true;
+function todayDone() {
+  const hm = nowHM(), it = itemsFor(todayStr()).filter(i => !i.done && (i.start || i.end));
+  return it.length > 0 && it.every(i => (i.end || i.start) <= hm);
+}
+const autoSel = () => todayDone() ? fmt(addDays(new Date(), 1)) : todayStr();
+// 离开了今天（点了别的日期）或者翻到了别的月份：显示"回到今天"
+function offToday() {
+  const n = new Date();
+  return (!selAuto && sel !== todayStr()) || cur.getMonth() !== n.getMonth() || cur.getFullYear() !== n.getFullYear();
+}
+function backToday() {
+  const n = new Date(), dir = cur < new Date(n.getFullYear(), n.getMonth(), 1) ? 'r' : cur > n ? 'l' : 'up';
+  cur = new Date(); cur.setDate(1); sel = todayStr(); selAuto = false;
+  return dir;
+}
+function renderMini(dir) {
+  const y = cur.getFullYear(), m = cur.getMonth(), today = todayStr();
+  $('#miniTitle').textContent = `${y}年${m + 1}月`;
+  $('#miniToday').classList.toggle('on', offToday());
+  const first = new Date(y, m, 1), start = addDays(first, -(dow(first) - 1));
+  let h = WD.slice(1).map(w => `<span class="mh">${w}</span>`).join('');
+  for (let i = 0; i < 42; i++) {
+    const d = addDays(start, i), ds = fmt(d), types = new Set(itemsFor(ds).map(x => x.type === 'other' ? 'event' : x.type));
+    const dots = ['course', 'task', 'event'].filter(t => types.has(t)).map(t => `<b class="c-${t}"></b>`).join('');
+    const cls = ['mday', d.getMonth() !== m && 'out', i % 7 > 4 && 'we', ds === today && 'today', ds === sel && 'sel'].filter(Boolean).join(' ');
+    h += `<button class="${cls}" data-d="${ds}" title="${mdText(d)} ${lunar(d).text}"><span>${d.getDate()}</span><i class="dots">${dots}</i></button>`;
+  }
+  $('#miniGrid').innerHTML = h;
+  $$('#miniGrid .mday').forEach(b => {
+    b.onclick = () => {
+      if (b.dataset.d === sel) return;
+      sel = b.dataset.d; selAuto = false;
+      let d = 'up';
+      if (b.classList.contains('out')) { d = sel < fmt(cur) ? 'l' : 'r'; cur = parseD(sel); cur.setDate(1); }
+      renderMini(d);
+    };
+    b.ondblclick = () => openEvent(null, b.dataset.d);
+  });
+  agendaInto('#miniAgTitle', '#miniAgMeta', '#miniAgenda');
+  if (dir === 'l' || dir === 'r') { anim($('#miniGrid'), 'anim-' + dir); anim($('#miniTitle'), 'anim-up'); }
+  if (dir === 'up' || dir === 'today') anim($('.mini-ag'), 'anim-up');
+}
+$('#miniPrev').onclick = () => { cur.setMonth(cur.getMonth() - 1); renderMini('l'); };
+$('#miniNext').onclick = () => { cur.setMonth(cur.getMonth() + 1); renderMini('r'); };
+$('#miniToday').onclick = () => { const d = backToday(); renderMini(d); anim($('.mini-ag'), 'anim-up'); };
+$('#miniAdd').onclick = () => openEvent(null, sel);
+
+/* ========== 首页搜索：课程、日程、待办、考试、笔记、成绩一起搜 ========== */
+// 点一下搜索框：框变宽，周围虚化（虚化层以搜索框为中心，越近越糊）；Esc 或点空白处收起
+const hs = { list: [], idx: 0 };
+function hsOpen() {
+  if (document.body.classList.contains('searching')) return;
+  const r = $('#hsearch').getBoundingClientRect();
+  $('#hsVeil').style.setProperty('--cx', `${r.left + r.width / 2}px`);
+  $('#hsVeil').style.setProperty('--cy', `${r.top - 20}px`);  // 稍微偏上：上面是要挡住的日历，下面留给结果列表
+  // 下面放不下结果列表就往上弹
+  const below = innerHeight - r.bottom - 24, above = r.top - 24, up = below < 260 && above > below;
+  $('#hsResults').classList.toggle('up', up);
+  $('#hsResults').style.maxHeight = `${Math.min(340, Math.max(160, (up ? above : below) - 40))}px`;
+  document.body.classList.add('searching');
+  hsRun();
+}
+function hsClose() { document.body.classList.remove('searching'); $('#hsInput').blur(); }
+const hsMark = (t, q) => esc(t).replace(new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark>${m}</mark>`);
+function hsRun() {
+  const raw = $('#hsInput').value.trim(), q = raw.toLowerCase(), box = $('#hsResults');
+  hs.list = []; hs.idx = 0;
+  if (!q) { box.classList.remove('has'); box.innerHTML = ''; return; }
+  const has = s => (s || '').toLowerCase().includes(q), out = [], seen = new Set();
+  for (const c of S.courses) if (!seen.has(c.name) && (has(c.name) || has(c.teacher) || has(c.room))) {
+    seen.add(c.name);
+    out.push({ k: '课程', t: c.name, s: `周${WD[c.day]} 第${c.start}-${c.end}节${c.room ? ' · ' + c.room : ''}`, go: () => go('courses') });
+  }
+  for (const e of S.events.slice().sort((a, b) => b.date.localeCompare(a.date))) if (has(e.title) || has(e.note))
+    out.push({ k: e.src === 'exam' ? '考试' : e.type === 'task' ? '待办' : '日程', t: e.title, s: `${mdText(parseD(e.date))}${e.start ? ' ' + e.start : ''}`, go: () => openEvent(e) });
+  for (const n of S.notes) if (has(n.title) || has(n.transcript) || has(n.aiNote))
+    out.push({ k: '笔记', t: n.title, s: n.date, go: () => { go('audio'); $('#noteQ').value = raw; renderNotes(); setTimeout(() => $(`#notes .list-item[data-id="${n.id}"]`)?.click(), 60); } });
+  for (const g of S.grades || []) if (has(g.name)) out.push({ k: '成绩', t: g.name, s: `${g.score} · ${g.term}`, go: () => go('grades') });
+  hs.list = out.slice(0, 30);
+  // 「新建」：和新建日程弹窗一样用本地规则认日期时间（不联网，打字时就出来），回车直接加进日历。
+  // 以"记一下 / 提醒我 / 添加"开头就排第一；本地没搜到也排第一；否则排在搜索结果后面，免得搜"明天开会"时回车加了一条重复的
+  const add = hsQuickAdd(raw);
+  if (add) (hsAddRe.test(raw) || !hs.list.length ? hs.list.unshift(add) : hs.list.push(add));
+  // 最后一条是「问 AI」：只有用户自己选它（回车 / 点击）才会调用 AI，打字时不会自动问。
+  // 本地没搜到、或者看起来是在提问时，把它放到第一条，直接回车就能问
+  const ask = raw.length >= 2 && !add && (!hs.list.length || hsLooksAsk(raw));
+  const aiRow = { k: 'AI', t: `问 AI：${raw}`, s: hsAiState(raw), ai: true, go: () => hsAskAi(raw) };
+  if (raw.length >= 2 && !(add && hsAddRe.test(raw))) ask ? hs.list.unshift(aiRow) : hs.list.push(aiRow);
+  box.classList.add('has');
+  // 问过的问题直接显示记住的回答，不再调用 AI
+  if (hs.ai.q !== raw && !hs.ai.busy && hs.aiCache.has(raw)) hs.ai = { q: raw, text: hs.aiCache.get(raw), busy: false, err: '' };
+  const ans = hs.ai.q === raw && (hs.ai.text || hs.ai.busy || hs.ai.err) ? hsAiBlock() : '';
+  box.innerHTML = ans + (hs.list.length
+    ? hs.list.map((r, i) => `<div class="hs-item${r.ai ? ' ai' : ''}${r.add ? ' add' : ''}${i ? '' : ' on'}" data-i="${i}"><span class="k">${r.k}</span><span class="tt">${r.ai || r.add ? esc(r.t) : hsMark(r.t, raw)}</span><span class="sb">${esc(r.s)}</span></div>`).join('')
+    : `<div class="hs-empty">没有找到「${esc(raw)}」</div>`);
+  box.querySelector('.hs-ai-stop')?.addEventListener('click', () => window.desktop.aiCancel());
+  box.querySelectorAll('.hs-item').forEach(el => {
+    el.onmousedown = e => e.preventDefault();  // 别让输入框失去焦点
+    el.onclick = () => hsPick(+el.dataset.i);
+    el.onmouseenter = () => hsHi(+el.dataset.i);
+  });
+}
+function hsHi(i) {
+  hs.idx = i;
+  $$('#hsResults .hs-item').forEach((el, k) => el.classList.toggle('on', k === i));
+  $(`#hsResults .hs-item[data-i="${i}"]`)?.scrollIntoView({ block: 'nearest' });
+}
+function hsPick(i) {
+  const r = hs.list[i];
+  if (!r) return;
+  if (r.ai) return r.go();  // 问 AI：面板留着看回答
+  $('#hsInput').value = ''; hsRun(); hsClose(); r.go();
+}
+
+/* 搜索里一句话新建日程："帮我记一下明天下午3点开班会" → 明天 15:00 开班会 */
+const hsAddRe = /^\s*(帮我|请)?(记一下|记一笔|记下|记个|记得|添加|新建|加个|加一个|提醒我|提醒一下|提醒)[:：,，\s]*/;
+function hsQuickAdd(raw) {
+  const add = hsAddRe.test(raw), text = raw.replace(hsAddRe, '').replace(/[,，\s]*提醒我?$/, '');
+  if (text.length < 3 || (!add && hsLooksAsk(raw))) return null;  // "明天有什么课？"是在问，不是要新建
+  const f = parseChat(text, new Date())[0];
+  if (!f) return null;
+  const title = cleanTitle(text).slice(0, 40), d = parseD(f.date);
+  const dup = S.events.some(e => e.title === title && e.date === f.date && (e.start || '') === (f.time || ''));
+  return { k: '新建', add: true, t: title, s: `${mdText(d)} 周${WD[dow(d)]}${f.time ? ' ' + f.time : ''} · ${dup ? '日历里已经有了' : TYPE_NAME[f.type]}`,
+    go: () => {
+      if (dup) return toast('日历里已经有这一条了');
+      S.events.push({ id: uid(), title, date: f.date, start: f.time || '', end: '', type: f.type, note: '' });
+      save();
+      sel = f.date; selAuto = false; cur = parseD(f.date); cur.setDate(1);  // 首页小日历跳到那一天，马上能看到
+      renderAll();
+      toast(`已加入日历：${mdText(d)}${f.time ? ' ' + f.time : ''} ${title}`, 3000);
+    } };
+}
+
+/* 搜索里的 AI：本地搜不到再用。AI 有调用次数限制，所以不主动调用：
+   用户选了「问 AI」才问；同一个问题记住回答不重复问；两次提问之间至少隔 HS_AI_GAP */
+const HS_AI_GAP = 15000;
+hs.ai = { q: '', text: '', busy: false, err: '' };
+hs.aiCache = new Map();
+hs.aiLast = 0;
+const hsLooksAsk = s => /[?？]|吗|呢|什么|怎么|怎样|哪|几[点节门个天]|多少|有没有|是不是|帮我|要不要/.test(s);
+function hsAiState(q) {
+  if (!window.desktop) return '桌面版可用';
+  if (hs.aiCache.has(q)) return '看回答';
+  if (hs.ai.busy) return '正在回答…';
+  const wait = Math.ceil((hs.aiLast + HS_AI_GAP - Date.now()) / 1000);
+  return wait > 0 ? `${wait} 秒后可问` : '回车';
+}
+function hsAiBlock() {
+  const a = hs.ai;
+  const body = a.err ? `<p class="hint" style="margin:0">${esc(a.err)}</p>`
+    : a.text ? mdHtml(a.text)
+    : '<div class="jw-loading"><span class="spin"></span><span>AI 正在翻你的课表和日程…</span></div>';
+  return `<div class="hs-ai"><div class="hs-ai-h"><span class="k">AI</span><b>回答</b>${a.busy ? '<span class="link hs-ai-stop">停止</span>' : ''}</div><div class="hs-ai-b">${body}</div></div>`;
+}
+// 给 AI 的资料：前一周到后三周每天的安排（含课程）、更远的日程、课程列表、成绩、笔记标题
+// 先在本地按关键词把可能相关的条目挑出来放在最前面：免费模型在一大段资料里找东西经常漏（实测问"期中考试是哪天"答没有）。
+// 关键词 = 问题里相邻的两个字，含"的、吗、什么、哪、周、天"这类虚字的不算
+const HS_STOP = new Set('的了吗呢吧啊么什哪有没是不这那下本上周天几点要我你他她帮看一个些还和在去到给把被呀嘛哦');
+function hsRelated(q) {
+  const grams = [];
+  for (let i = 0; i < q.length - 1; i++) { const g = q.slice(i, i + 2); if (!/[\s\p{P}]/u.test(g) && !HS_STOP.has(g[0]) && !HS_STOP.has(g[1])) grams.push(g.toLowerCase()); }
+  if (!grams.length) return [];
+  const score = s => grams.filter(g => (s || '').toLowerCase().includes(g)).length, out = [];
+  for (const e of S.events) { const n = score(e.title + ' ' + (e.note || '')); if (n) out.push([n, `${e.date}【周${WD[dow(parseD(e.date))]}】${e.start ? ' ' + e.start : ''} ${e.title}${e.type === 'task' ? '[作业/考试]' : ''}${e.done ? '[已完成]' : ''}`]); }
+  const seen = new Set();
+  for (const c of S.courses) { const n = score(c.name + ' ' + (c.teacher || '') + ' ' + (c.room || '')); if (n && !seen.has(c.name + c.day + c.start)) { seen.add(c.name + c.day + c.start); out.push([n, `课程 ${c.name}：周${WD[c.day]}第${c.start}-${c.end}节${c.room ? ' ' + c.room : ''}${c.teacher ? ' ' + c.teacher : ''}`]); } }
+  for (const g of S.grades || []) { const n = score(g.name); if (n) out.push([n, `成绩 ${g.term} ${g.name} ${g.score}`]); }
+  return out.sort((a, b) => b[0] - a[0]).slice(0, 12).map(x => x[1]);
+}
+// 每天都直接标上「今天/明天/本周/下周」：免费模型自己推算日期经常算错（实测把本周五说成下周六）
+function hsContext(q = '') {
+  const today = parseD(todayStr()), lines = [], mon = addDays(today, -(dow(today) - 1));
+  const rel = d => {
+    const n = Math.round((d - today) / 864e5), w = Math.floor(Math.round((d - mon) / 864e5) / 7);
+    return [{ '-1': '昨天', 0: '今天', 1: '明天', 2: '后天' }[n], ['上周', '本周', '下周', '下下周'][w + 1]].filter(Boolean).join('·');
+  };
+  // 没安排的日子也列出来（写"无"），不然问"下周三"时模型找不到那一天就会自己瞎算
+  for (let i = -7; i <= 21; i++) {
+    const d = addDays(today, i), ds = fmt(d), it = itemsFor(ds);
+    lines.push(`${ds}【${rel(d)}周${WD[dow(d)]}，第${termWeek(d)}教学周】：` + (it.map(x => `${x.start ? x.start + (x.end ? '-' + x.end : '') + ' ' : ''}${x.title}${x.kind === 'course' ? '[课]' : x.type === 'task' ? '[作业/考试]' : ''}${x.done ? '[已完成]' : ''}${x.room ? '@' + x.room : ''}`).join('；') || '无'));
+  }
+  const far = fmt(addDays(today, 21));
+  const later = S.events.filter(e => e.date > far).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 60)
+    .map(e => `${e.date}${e.start ? ' ' + e.start : ''} ${e.title}${e.type === 'task' ? '[作业/考试]' : ''}`);
+  const seen = new Set(), courses = [];
+  for (const c of S.courses) {
+    const k = `${c.name}|${c.day}|${c.start}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    courses.push(`${c.name}：周${WD[c.day]}第${c.start}-${c.end}节${c.room ? ' ' + c.room : ''}${c.teacher ? ' ' + c.teacher : ''}${c.weeks?.length ? ` 第${c.weeks[0]}-${c.weeks.at(-1)}周` : ''}`);
+  }
+  const grades = (S.grades || []).slice(0, 80).map(g => `${g.term} ${g.name} ${g.score}`);
+  const notes = S.notes.slice(0, 30).map(n => `${n.date} ${n.title}`);
+  const hits = hsRelated(q);
+  return [
+    hits.length && `## 和问题可能相关的条目（先看这里）\n${hits.join('\n')}`,
+    `## 每天的安排（今天前一周到后三周）\n${lines.join('\n') || '无'}`,
+    later.length && `## 更远的日程\n${later.join('\n')}`,
+    courses.length && `## 课程表\n${courses.join('\n')}`,
+    grades.length && `## 成绩\n${grades.join('\n')}`,
+    notes.length && `## 录课笔记\n${notes.join('\n')}`
+  ].filter(Boolean).join('\n\n').slice(0, 24000);
+}
+async function hsAskAi(q) {
+  if (!aiReady()) return needAi();
+  if (hs.ai.busy) return;
+  if (hs.aiCache.has(q)) { hs.ai = { q, text: hs.aiCache.get(q), busy: false, err: '' }; return hsRun(); }
+  const wait = Math.ceil((hs.aiLast + HS_AI_GAP - Date.now()) / 1000);
+  if (wait > 0) return toast(`AI 刚回答过，${wait} 秒后再问`);
+  hs.aiLast = Date.now();
+  hs.ai = { q, text: '', busy: true, err: '' };
+  hsRun();
+  const today = parseD(todayStr());
+  const sys = `你是大学生的校园助手，回答他关于自己课表、日程、作业考试、成绩的问题，也可以回答一般的学习生活问题。
+今天是 ${fmt(today)}（星期${WD[dow(today)]}，本学期第${termWeek(today)}教学周）。一周从周一算起。
+下面是他的资料。每一天后面的【】里已经标好了是今天、明天、本周还是下周，直接用，不要自己推算日期；回答里的日期、时间原样照抄资料。资料里没有的就直说没有，不要编造：
+${hsContext(q)}
+要求：用中文，简短直接，先给结论；列多项时用列表，每项写上日期和星期；不要客套话。`;
+  let acc = '';
+  const r = await aiAsk([{ role: 'system', content: sys }, { role: 'user', content: q }], d => {
+    acc += d;
+    if (hs.ai.q !== q) return;
+    hs.ai.text = acc;
+    const b = $('#hsResults .hs-ai-b');
+    if (b) b.innerHTML = mdHtml(acc);
+  });
+  if (hs.ai.q !== q) return;
+  hs.ai = { q, text: r.ok ? r.text.trim() : acc, busy: false, err: r.ok ? '' : r.message };
+  if (r.ok) hs.aiCache.set(q, hs.ai.text);
+  else hs.aiLast = 0;  // 没问成不算次数
+  if ($('#hsInput').value.trim() === q) hsRun();
+}
+$('#hsInput').onfocus = hsOpen;
+$('#hsInput').oninput = hsRun;
+$('#hsearch .hs-box').onclick = () => $('#hsInput').focus();
+$('#hsVeil').onclick = () => { $('#hsInput').value = ''; hsRun(); hsClose(); };
+$('#hsInput').onkeydown = e => {
+  if (e.isComposing) return;
+  if (e.key === 'Escape') { if (hs.ai.busy) window.desktop.aiCancel(); $('#hsInput').value = ''; hsRun(); hsClose(); }
+  else if (e.key === 'ArrowDown' && hs.list.length) { e.preventDefault(); hsHi((hs.idx + 1) % hs.list.length); }
+  else if (e.key === 'ArrowUp' && hs.list.length) { e.preventDefault(); hsHi((hs.idx - 1 + hs.list.length) % hs.list.length); }
+  else if (e.key === 'Enter') hsPick(hs.idx);
+};
+// Ctrl+K：在哪个页面都能直接搜
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && !document.querySelector('dialog[open]')) {
+    e.preventDefault();
+    const was = curView;
+    go('home');
+    setTimeout(() => $('#hsInput').focus(), was === 'home' ? 0 : 450);
+  }
+});
+function tlRow(i, tag = '', done = false) {
+  return `<div class="tl${done || i.done ? ' done' : ''}" data-kind="${i.kind}" data-id="${i.id}">
+    <div class="tl-time"><b>${i.start || '全天'}</b><span>${i.end || ''}</span></div>
+    <div class="tl-bar c-${i.type}"></div>
+    <div class="tl-body"><div class="tl-title"><span class="t">${esc(i.title)}</span>${tag}</div><div class="tl-sub">${esc(i.sub || TYPE_NAME[i.type])}</div></div></div>`;
+}
+function bindTl(sel) { $$(sel + ' .tl').forEach(el => el.onclick = () => openItem(el.dataset.kind, el.dataset.id)); }
+// 去掉日期时间说法，剩下的当标题（"一句话新建"用）
+function cleanTitle(s) {
+  const t = s.replace(/@\S+\s?/g, '')
+    .replace(/(下下|下个?|这个?|本|上个?)?(周|星期|礼拜)[一二三四五六日天1-7]/g, '')
+    .replace(/(大后天|后天|明天|明日|今天|今日|今晚|明晚|今早|明早)/g, '')
+    .replace(new RegExp(`(${NUM})月(${NUM})[日号]?`, 'g'), '')
+    .replace(/(早上|早晨|上午|中午|下午|傍晚|晚上)/g, '')
+    .replace(new RegExp(`第(${NUM})(?:[-~到至](?:${NUM}))?节`, 'g'), '')
+    .replace(new RegExp(`(${NUM})\\s*(?:[:：]\\d{2}|[点时](?:半|一刻|三刻|${NUM})?分?)\\s*(之?前)?`, 'g'), '')
+    .replace(/^[\s,，、在于到]+|[\s,，、。！!]+$/g, '');
+  return t.length >= 2 ? t : s.trim();
+}
+
+/* 月历：每天显示农历；条目一行一个（色条 + 名称 + 时间），放不下的折叠成"还有 n 项" */
+let cur = new Date(); cur.setDate(1);
+let sel = todayStr();
+const LUNAR = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', { month: 'long', day: 'numeric' });
+const LDAY = ['', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十', '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+function lunar(d) {
+  try {
+    let m = '', day = 0;
+    for (const p of LUNAR.formatToParts(d)) { if (p.type === 'month') m = p.value; if (p.type === 'day') day = +p.value; }
+    return day === 1 ? { text: m, first: true } : { text: LDAY[day] || '', first: false };
+  } catch (e) { return { text: '', first: false }; }
+}
+function renderCalendar(dir) {
+  const y = cur.getFullYear(), m = cur.getMonth(), tw = termWeek(new Date());
+  $('#calTitle').textContent = `${y}年${m + 1}月`;
+  const off = offToday();
+  $('#todayBtn').textContent = off ? '回到今天' : '今天';
+  $('#todayBtn').classList.toggle('back-on', off);
+  $('#calSub').textContent = (inTerm(tw) ? `今天是第 ${tw} 教学周 · ` : '') + '双击日期可以新建日程';
+  const first = new Date(y, m, 1), start = addDays(first, -(dow(first) - 1)), today = todayStr();
+  let h = '<div class="hd"></div>' + WD.slice(1).map((w, i) => `<div class="hd${i > 4 ? ' we' : ''}">周${w}</div>`).join('');
+  for (let r = 0; r < 6; r++) {
+    const wk = termWeek(addDays(start, r * 7));
+    h += `<div class="wk" title="${inTerm(wk) ? `第 ${wk} 教学周` : ''}">${inTerm(wk) ? wk : ''}</div>`;
+    for (let c = 0; c < 7; c++) {
+      const d = addDays(start, r * 7 + c), ds = fmt(d), lu = lunar(d);
+      const cls = ['day', c > 4 && 'we', d.getMonth() !== m && 'out', ds === today && 'today', ds === sel && 'sel'].filter(Boolean).join(' ');
+      h += `<div class="${cls}" data-d="${ds}"><div class="dh"><span class="n">${d.getDate()}</span><span class="lu${lu.first ? ' m1' : ''}">${lu.text}</span></div><div class="evs">`
+        + itemsFor(ds).map(i => `<div class="ev c-${i.type}${i.done ? ' done' : ''}" title="${esc(i.title)}${i.start ? ' ' + i.start : ''}"><i></i><span class="tt">${esc(i.title)}</span>${i.start ? `<span class="tm">${i.start}</span>` : ''}</div>`).join('')
+        + '</div></div>';
+    }
+  }
+  $('#month').innerHTML = h;
+  $$('#month .day').forEach(el => {
+    el.onclick = () => {
+      if (el.dataset.d === sel) return;
+      sel = el.dataset.d; selAuto = false;
+      $$('#month .day.sel').forEach(x => x.classList.remove('sel')); el.classList.add('sel');
+      renderAgenda(); anim($('#agenda'), 'anim-up');
+      const o = offToday(); $('#todayBtn').textContent = o ? '回到今天' : '今天'; $('#todayBtn').classList.toggle('back-on', o);
+    };
+    el.ondblclick = () => openEvent(null, el.dataset.d);
+  });
+  fitDays();
+  renderAgenda();
+  renderCalTodo();
+  if (dir === 'l' || dir === 'r') { anim($('#month'), 'anim-' + dir); anim($('#calTitle'), 'anim-up'); }
+  if (dir === 'up') anim($('#agenda'), 'anim-up');
+}
+// 格子放不下：从后往前藏，最后一行换成"还有 n 项"
+function fitDays() {
+  $$('#month .evs').forEach(box => {
+    box.querySelector('.more')?.remove();
+    const rows = [...box.children];
+    rows.forEach(r => r.style.display = '');
+    if (box.scrollHeight <= box.clientHeight + 1) return;
+    const more = document.createElement('div');
+    more.className = 'ev more';
+    box.appendChild(more);
+    let hidden = 0;
+    for (let i = rows.length - 1; i >= 0 && box.scrollHeight > box.clientHeight + 1; i--) {
+      rows[i].style.display = 'none'; hidden++;
+      more.textContent = `还有 ${hidden} 项`;
+    }
+  });
+}
+window.addEventListener('resize', () => { clearTimeout(fitDays.h); fitDays.h = setTimeout(fitDays, 80); });
+// 选中那天的安排（首页和日历页共用）
+function agendaInto(titleSel, metaSel, listSel) {
+  const d = parseD(sel), wk = termWeek(d), isToday = sel === todayStr(), hm = nowHM();
+  const isTmr = sel === fmt(addDays(new Date(), 1));
+  $(titleSel).textContent = isToday ? '今天' : isTmr ? '明天' : `${mdText(d)} 周${WD[dow(d)]}`;
+  $(metaSel).textContent = [isTmr && selAuto ? '今天的都结束啦' : '', isToday || isTmr ? `${mdText(d)} 周${WD[dow(d)]}` : '', inTerm(wk) ? `第${wk}周` : '', lunar(d).text].filter(Boolean).join(' · ');
+  const items = itemsFor(sel);
+  $(listSel).innerHTML = items.length ? items.map(i => {
+    if (!isToday) return tlRow(i);
+    const live = i.start && i.end && i.start <= hm && i.end > hm;
+    const past = i.end ? i.end <= hm : i.kind === 'course' && i.start && i.start < hm;
+    return tlRow(i, live ? '<span class="tag">进行中</span>' : '', past && !live);
+  }).join('') : `<div class="empty">${isToday ? '今天没有安排，好好休息' : '这天没有安排'}</div>`;
+  bindTl(listSel);
+}
+const renderAgenda = () => agendaInto('#agTitle', '#agMeta', '#agenda');
+$('#prevM').onclick = () => { cur.setMonth(cur.getMonth() - 1); renderCalendar('l'); };
+$('#nextM').onclick = () => { cur.setMonth(cur.getMonth() + 1); renderCalendar('r'); };
+$('#todayBtn').onclick = () => { if (!offToday()) return; renderCalendar(backToday()); };
+$('#addEv').onclick = () => openEvent(null, sel);
+
+/* ========== 待办：type 为 task 的日程（作业、考试、截止），可以勾掉 ========== */
+const todos = () => S.events.filter(e => e.type === 'task');
+const isExam = e => e.src === 'exam' || /考试|测验|期中考|期末考|小测/.test(e.title);
+function dueMs(e) { const d = parseD(e.date), [h, m] = (e.start || '23:59').split(':').map(Number); d.setHours(h, m); return +d; }
+function leftTag(e) {
+  if (e.done) return '';
+  if (dueMs(e) < Date.now()) return '<span class="tag red">已过期</span>';
+  const days = Math.round((parseD(e.date) - parseD(todayStr())) / 864e5);
+  return days === 0 ? '<span class="tag">今天</span>' : days === 1 ? '<span class="tag">明天</span>' : `<span class="tag${days > 3 ? ' gray' : ''}">${days} 天后</span>`;
+}
+function todoRow(e) {
+  const d = parseD(e.date);
+  const when = `${mdText(d)} 周${WD[dow(d)]}` + (e.start ? ` ${e.start}${isExam(e) ? ' 开始' : ' 截止'}` : '');
+  return `<div class="todo${e.done ? ' done' : ''}" data-id="${e.id}"><input type="checkbox"${e.done ? ' checked' : ''} title="${e.done ? '改回没做完' : '做完了，勾掉'}">
+    <div class="tb"><div class="tt">${esc(e.title)}</div><div class="ts">${when}${e.note ? ' · ' + esc(e.note) : ''}</div></div>${leftTag(e)}</div>`;
+}
+function bindTodos(el) {
+  el.querySelectorAll('.todo').forEach(r => {
+    const ev = S.events.find(x => x.id === r.dataset.id);
+    r.querySelector('input').onclick = e => {
+      e.stopPropagation();
+      ev.done = e.target.checked;
+      if (ev.done) ev.doneAt = Date.now(); else delete ev.doneAt;
+      save();
+      setTimeout(renderAll, ev.done ? 260 : 0);  // 勾上后停一下再移走，看得到勾
+    };
+    r.onclick = () => openEvent(ev);
+  });
+}
+function renderCalTodo() {
+  const list = todos().filter(e => !e.done).sort((a, b) => dueMs(a) - dueMs(b));
+  $('#homeTodoMeta').textContent = list.length ? `${list.length} 项没做完` : '';
+  $('#homeTodo').innerHTML = list.length ? list.slice(0, 6).map(todoRow).join('') : '<div class="empty">没有待办 ～</div>';
+  bindTodos($('#homeTodo'));
+}
+let doneOpen = false;
+function renderTodo() {
+  const now = Date.now(), t = todayStr(), tm = fmt(addDays(new Date(), 1)), sun = fmt(addDays(new Date(), 7 - dow(new Date())));
+  const undone = todos().filter(e => !e.done).sort((a, b) => dueMs(a) - dueMs(b));
+  const groups = [['已过期', e => dueMs(e) < now], ['今天', e => e.date === t], ['明天', e => e.date === tm], ['本周', e => e.date <= sun], ['以后', () => true]];
+  const used = new Set();
+  let h = '';
+  for (const [name, f] of groups) {
+    const list = undone.filter(e => !used.has(e) && f(e));
+    list.forEach(e => used.add(e));
+    if (list.length) h += `<div class="card"><div class="card-h"><h3>${name}</h3><span class="hint">${list.length} 项</span></div>${list.map(todoRow).join('')}</div>`;
+  }
+  if (!undone.length) h += '<div class="card"><div class="empty">没有待办，轻松一下 ～<br>识别聊天记录、录课时找到的作业考试，加入日历后也会出现在这里</div></div>';
+  const done = todos().filter(e => e.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+  if (done.length) h += `<details class="card todo-group"${doneOpen ? ' open' : ''}><summary>已完成 <span class="hint" style="font-family:var(--sans)">${done.length} 项</span></summary>${done.slice(0, 60).map(todoRow).join('')}</details>`;
+  $('#todoList').innerHTML = h;
+  $('#todoList details')?.addEventListener('toggle', e => doneOpen = e.target.open);
+  bindTodos($('#todoList'));
+  $('#todoSub').textContent = undone.length ? `作业、考试和各种截止日期 · 还有 ${undone.length} 项没做完` : '作业、考试和各种截止日期 · 全部做完了';
+}
+$('#addTodo').onclick = () => openEvent(null, todayStr(), '', 'task');
+
+/* 日程弹窗 */
+let editingEv = null;
+function openEvent(ev, date, title, type) {
+  editingEv = ev || null;
+  $('#evDlgTitle').textContent = ev ? '编辑日程' : '新建日程';
+  $$('.ev-quick').forEach(x => x.style.display = ev ? 'none' : '');
+  $('#evQuick').value = ''; $('#evAiState').textContent = '';
+  $('#evTitle').value = ev?.title || title || '';
+  $('#evDate').value = ev?.date || date || todayStr();
+  $('#evStart').value = ev?.start || '';
+  $('#evEnd').value = ev?.end || '';
+  $('#evType').value = ev?.type && ev.type !== 'course' ? ev.type : type || 'task';
+  $('#evNote').value = ev?.note || '';
+  $('#evDel').style.visibility = ev ? 'visible' : 'hidden';
+  $('#evDlg').showModal();
+  if (!ev) setTimeout(() => $('#evQuick').focus(), 50);
+}
+// 自动识别：边打字边用本地规则认出日期、时间、类型，马上填到下面（不联网，不用等）
+$('#evQuick').oninput = () => {
+  const text = $('#evQuick').value.trim(), st = $('#evAiState');
+  if (!text) { st.textContent = ''; return; }
+  const f = parseChat(text, new Date())[0];
+  $('#evTitle').value = f ? cleanTitle(text) : text;
+  if (f) { $('#evDate').value = f.date; $('#evStart').value = f.time || ''; $('#evType').value = f.type; }
+  st.textContent = f ? `已识别：${mdText(parseD(f.date))}${f.time ? ' ' + f.time : ''}` : '还没认出时间';
+};
+$('#evQuick').onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); $('#evSave').click(); } };
+$('#evCancel').onclick = () => $('#evDlg').close();
+$('#evSave').onclick = () => {
+  const v = { title: $('#evTitle').value.trim(), date: $('#evDate').value, start: $('#evStart').value, end: $('#evEnd').value, type: $('#evType').value, note: $('#evNote').value.trim() };
+  if (!v.title || !v.date) return toast('标题和日期必须填写');
+  if (editingEv) Object.assign(editingEv, v); else S.events.push({ id: uid(), ...v });
+  save(); $('#evDlg').close(); sel = v.date; selAuto = false; cur = parseD(v.date); cur.setDate(1); renderAll();
+};
+$('#evDel').onclick = () => {
+  if (!editingEv || !confirm('删除这条日程？')) return;
+  S.events = S.events.filter(e => e !== editingEv);
+  save(); $('#evDlg').close(); renderAll();
+};
+
+/* ========== 课程表 ========== */
+let viewWeek = 1;
+const PALETTE = ['#c6613f', '#4e6e93', '#5a8060', '#86689f', '#b08a3e', '#3f8584', '#a5566a', '#6f7d45'];
+const colorOf = name => { let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return PALETTE[h % PALETTE.length]; };
+
+// 课程表默认显示本周；周日最后一件事也结束了，就直接显示下一周
+function defaultWeek() { const n = new Date(), w = termWeek(n); return dow(n) === 7 && todayDone() ? w + 1 : w; }
+// 课程表的竖向坐标：时间 → 像素（每节课一行 56px，课间休息压缩到两节课的交界处）
+const RH = 56;
+const toMin = hm => { const [h, m] = String(hm).split(':').map(Number); return h * 60 + (m || 0); };
+function timeToY(hm, H0) {
+  const t = toMin(hm), secs = S.settings.sections.map(s => s.split('-').map(toMin));
+  if (!secs.length || t <= secs[0][0]) return H0;
+  for (let i = 0; i < secs.length; i++) {
+    const [a, b] = secs[i], top = H0 + i * RH;
+    if (t < a) return top;
+    if (t <= b) return top + (t - a) / (b - a) * RH;
+  }
+  return H0 + secs.length * RH;
+}
+function renderCourses() {
+  const total = S.settings.totalWeeks, n = S.settings.sections.length;
+  viewWeek = Math.min(Math.max(viewWeek, 1), total);
+  const mon = addDays(termMonday(), (viewWeek - 1) * 7), today = todayStr();
+  $('#wkSub').textContent = `第 ${viewWeek} 周 · ${mdText(mon)} – ${mdText(addDays(mon, 6))}` + (viewWeek === termWeek(new Date()) ? ' · 本周' : '');
+  $('#kbSyncAt').textContent = syncText(S.kbSyncedAt);
+  // 这一周自己添加的日程：有时间的画在格子里，全天的放在日期下面
+  const days = [...Array(7)].map((_, i) => fmt(addDays(mon, i)));
+  const wkEv = S.events.filter(e => days.includes(e.date));
+  const allDay = wkEv.filter(e => !e.start), H0 = allDay.length ? 70 : 52;
+  const g = $('#ttGrid');
+  g.style.gridTemplateRows = `${H0}px repeat(${n}, ${RH}px)`;
+  let h = '<div class="h" style="grid-column:1;grid-row:1"></div>';
+  for (let d = 1; d <= 7; d++) {
+    const dt = addDays(mon, d - 1);
+    const ad = allDay.filter(e => e.date === days[d - 1]);
+    h += `<div class="h${fmt(dt) === today ? ' today' : ''}" style="grid-column:${d + 1};grid-row:1">周${WD[d]}<small>${dt.getMonth() + 1}/${dt.getDate()}</small>`
+      + (ad.length ? `<span class="tt-allday c-${ad[0].type || 'other'}" data-ev="${ad[0].id}" title="${esc(ad.map(e => e.title).join('、'))}"><b>${esc(ad[0].title)}</b>${ad.length > 1 ? ` 等${ad.length}项` : ''}</span>` : '') + '</div>';
+  }
+  for (let i = 1; i <= n; i++) {
+    h += `<div class="sec" style="grid-column:1;grid-row:${i + 1}">${i}<small>${secTime(i)[0]}</small></div>`;
+    for (let d = 1; d <= 7; d++) h += `<div class="cell" data-day="${d}" data-sec="${i}" style="grid-column:${d + 1};grid-row:${i + 1}"></div>`;
+  }
+  // 本周的课正常显示；不在本周的课，如果那个格子本周空着，就淡显出来并标"非本周"
+  const placed = [];
+  const overlaps = c => placed.some(p => p.day === c.day && p.start <= c.end && c.start <= p.end);
+  const thisWeek = S.courses.filter(c => c.weeks.includes(viewWeek));
+  const notThisWeek = S.courses.filter(c => !c.weeks.includes(viewWeek));
+  for (const c of thisWeek) {
+    placed.push(c);
+    const col = colorOf(c.name);
+    h += `<div class="cblock" data-id="${c.id}" style="grid-column:${c.day + 1};grid-row:${c.start + 1}/${Math.min(c.end, n) + 2};border-color:${col};background:color-mix(in srgb,${col} 12%,var(--panel))">
+      <b>${esc(c.name)}</b>${esc(c.room || '')}<br>${esc(c.teacher || '')}</div>`;
+  }
+  for (const c of notThisWeek) {
+    if (overlaps(c)) continue;
+    placed.push(c);
+    h += `<div class="cblock ghost" data-id="${c.id}" title="${esc(c.name)}：${esc(c.weeksText || '')}" style="grid-column:${c.day + 1};grid-row:${c.start + 1}/${Math.min(c.end, n) + 2}">
+      <span class="nw">非本周</span><b>${esc(c.name)}</b>${esc(c.weeksText || '')}</div>`;
+  }
+  // 叠在格子上面的一层：自己的日程 + 橙色的"现在"时间线
+  const colX = k => `calc(62px + (100% - 62px) * ${k} / 7)`, colW = 'calc((100% - 62px) / 7)';
+  let ov = '';
+  for (const e of wkEv.filter(e => e.start)) {
+    const d = days.indexOf(e.date), end = e.end && e.end > e.start ? e.end : `${pad(Math.floor((toMin(e.start) + 45) / 60) % 24)}:${pad((toMin(e.start) + 45) % 60)}`;
+    // 最后一节课之后的（比如 22:00 截止）贴在最底下一格里
+    // 至少 40px 高，标题和时间都放得下（比如午休时间的事，在课程表上没有对应的格子，会被压得很扁）
+    const bottom = H0 + n * RH, y1 = Math.min(timeToY(e.start, H0), bottom - 42), y2 = Math.min(Math.max(timeToY(end, H0), y1 + 42), bottom);
+    // 和课撞了就靠右窄一点，不挡住课名
+    const clash = thisWeek.some(c => c.day === d + 1 && toMin(secTime(c.start)[0]) < toMin(end) && toMin(e.start) < toMin(secTime(c.end)[1]));
+    ov += `<div class="tt-ev c-${e.type || 'other'}${e.done ? ' done' : ''}" data-ev="${e.id}" title="${esc(e.title)} ${e.start}${e.end ? '-' + e.end : ''}"
+      style="top:${y1 + 2}px;height:${y2 - y1 - 4}px;left:calc(${colX(d)} + ${clash ? `${colW} * .42` : '4px'});width:calc(${colW} * ${clash ? .58 : 1} - ${clash ? 4 : 8}px)">
+      <b>${esc(e.title)}</b><span>${e.start}${e.end ? '-' + e.end : ''}</span></div>`;
+  }
+  const ti = days.indexOf(today), hmNow = nowHM(), secs = S.settings.sections;
+  if (ti >= 0 && secs.length && hmNow >= secs[0].split('-')[0] && hmNow <= secs[secs.length - 1].split('-')[1]) {
+    const y = timeToY(hmNow, H0);
+    ov += `<div class="tt-now" style="top:${y}px;left:62px;right:0"></div><div class="tt-now today" style="top:${y}px;left:${colX(ti)};width:${colW}"></div><div class="tt-now-tm" style="top:${y}px">${hmNow}</div>`;
+  }
+  h += `<div class="tt-ov">${ov}</div>`;
+  g.innerHTML = h;
+  $$('#ttGrid [data-ev]').forEach(el => el.onclick = e => { e.stopPropagation(); openEvent(S.events.find(x => x.id === el.dataset.ev)); });
+  const others = (S.otherCourses || []).filter(o => o.weeks.includes(viewWeek));
+  $('#otherNote').style.display = others.length ? '' : 'none';
+  $('#otherNote').innerHTML = others.length ? `<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--accent)"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>本周还有不固定时间的课：${others.map(o => esc(o.text)).join('；')}` : '';
+  $$('#ttGrid .cblock').forEach(el => el.onclick = () => openCourse(S.courses.find(c => c.id === el.dataset.id)));
+  $$('#ttGrid .cell').forEach(el => el.onclick = () => openCourse(null, +el.dataset.day, +el.dataset.sec));
+
+  $('#cCount').textContent = `${S.courses.length} 条`;
+  $('#courseList').innerHTML = S.courses.length ? S.courses.slice().sort((a, b) => a.day - b.day || a.start - b.start).map(c =>
+    `<div class="list-item" data-id="${c.id}"><span class="dot" style="background:${colorOf(c.name)}"></span>${esc(c.name)} <span class="hint">周${WD[c.day]} ${c.start}-${c.end}节 · ${esc(c.weeksText || '')} · ${esc(c.room || '')}</span></div>`).join('')
+    : '<div class="empty">还没有课程，先抓取或导入</div>';
+  $$('#courseList .list-item').forEach(el => el.onclick = () => openCourse(S.courses.find(c => c.id === el.dataset.id)));
+}
+$('#prevW').onclick = () => { viewWeek--; renderCourses(); };
+$('#nextW').onclick = () => { viewWeek++; renderCourses(); };
+$('#thisW').onclick = () => { viewWeek = termWeek(new Date()); renderCourses(); };
+// "上次同步：今天 08:44"
+function syncText(ts) {
+  if (!ts) return '还没同步过';
+  const d = new Date(ts), hm = `${pad(d.getHours())}:${pad(d.getMinutes())}`, ds = fmt(d);
+  return '上次同步 ' + (ds === todayStr() ? `今天 ${hm}` : ds === fmt(addDays(new Date(), -1)) ? `昨天 ${hm}` : `${d.getMonth() + 1}/${d.getDate()} ${hm}`);
+}
+$('#addCourse').onclick = () => openCourse(null, 1, 1);
+$('#clrCourses').onclick = () => { if (confirm('确定清空全部课程？')) { S.courses = []; save(); renderAll(); } };
+
+/* 课程弹窗 */
+let editingC = null;
+$('#cDay').innerHTML = WD.slice(1).map((w, i) => `<option value="${i + 1}">周${w}</option>`).join('');
+function openCourse(c, day, sec) {
+  editingC = c || null;
+  $('#cDlgTitle').textContent = c ? '编辑课程' : '添加课程';
+  $('#cName').value = c?.name || '';
+  $('#cTeacher').value = c?.teacher || '';
+  $('#cRoom').value = c?.room || '';
+  $('#cDay').value = c?.day || day || 1;
+  $('#cStart').value = c?.start || sec || 1;
+  $('#cEnd').value = c?.end || (sec ? sec + 1 : 2);
+  $('#cWeeks').value = c?.weeksText || `1-${S.settings.totalWeeks}周`;
+  $('#cDel').style.visibility = c ? 'visible' : 'hidden';
+  $('#cDlg').showModal();
+}
+$('#cCancel').onclick = () => $('#cDlg').close();
+$('#cSave').onclick = () => {
+  const v = { name: $('#cName').value.trim(), teacher: $('#cTeacher').value.trim(), room: $('#cRoom').value.trim(),
+    day: +$('#cDay').value, start: +$('#cStart').value, end: +$('#cEnd').value, weeksText: $('#cWeeks').value.trim() };
+  v.weeks = parseWeeks(v.weeksText);
+  if (!v.name) return toast('请填写课程名');
+  if (v.end < v.start) return toast('结束节次不能早于开始节次');
+  if (!v.weeks.length) return toast('周次格式不对，例如 1-16周');
+  if (editingC) Object.assign(editingC, v); else S.courses.push({ id: uid(), ...v });
+  save(); $('#cDlg').close(); renderAll();
+};
+$('#cDel').onclick = () => {
+  if (!editingC || !confirm('删除这门课？')) return;
+  S.courses = S.courses.filter(c => c !== editingC);
+  save(); $('#cDlg').close(); renderAll();
+};
+
+/* 文本 / JSON 导入 */
+function mkCourse(o) {
+  const weeksText = o.weeksText || `1-${S.settings.totalWeeks}周`;
+  return { id: uid(), name: o.name, teacher: o.teacher || '', room: o.room || '', day: o.day, start: o.start, end: o.end, weeksText, weeks: parseWeeks(weeksText) };
+}
+function parseCourseText(text) {
+  const t = text.trim(), out = [];
+  if (!t) return out;
+  if (/^[\[{]/.test(t)) {
+    const obj = JSON.parse(t);
+    const list = Array.isArray(obj) ? obj : (obj.kbList || obj.data || obj.courses || []);
+    for (const k of list) {
+      if (k.kcmc) {  // 正方教务系统字段
+        const m = String(k.jcs || k.jc || '').match(/(\d+)(?:-(\d+))?/);
+        if (!m) continue;
+        out.push(mkCourse({ name: k.kcmc, teacher: k.xm, room: k.cdmc, day: +k.xqj, start: +m[1], end: +(m[2] || m[1]), weeksText: k.zcd }));
+      } else if (k.name && k.day) out.push(mkCourse(k));
+    }
+    return out;
+  }
+  for (const line of t.split(/\n/)) {
+    const f = line.split(/[,，\t]/).map(s => s.trim()).filter(Boolean);
+    if (f.length < 3) continue;
+    let day = 0, start = 0, end = 0, weeksText = '';
+    const rest = [];
+    for (const x of f) {
+      let m;
+      if (!day && (m = x.match(/^(?:周|星期)([一二三四五六日天])$/))) day = '一二三四五六日'.indexOf(m[1].replace('天', '日')) + 1;
+      else if (!start && (m = x.match(/^第?(\d+)(?:-(\d+))?节$/))) { start = +m[1]; end = +(m[2] || m[1]); }
+      else if (!weeksText && /\d.*周/.test(x)) weeksText = x;
+      else rest.push(x);
+    }
+    if (!day || !start || !rest[0]) continue;
+    out.push(mkCourse({ name: rest[0], teacher: rest[1], room: rest[2], day, start, end, weeksText }));
+  }
+  return out;
+}
+$('#impBtn').onclick = () => {
+  let list;
+  try { list = parseCourseText($('#impText').value); } catch (e) { return toast('JSON 格式有误：' + e.message); }
+  if (!list.length) return toast('没有识别出课程，请检查格式');
+  S.courses.push(...list); save(); renderAll();
+  $('#impText').value = '';
+  toast(`导入了 ${list.length} 门课`);
+};
+
+/* 从正方教务系统抓取（桌面版）：main.js 在已登录的教务页面里调用接口，返回课程、作息时间、学期日期 */
+function coursesFromJw(d) {
+  const out = [];
+  for (const k of d.kbList || []) {
+    const m = String(k.jcs || '').match(/(\d+)(?:-(\d+))?/);
+    if (!m || !k.kcmc || !+k.xqj) continue;
+    out.push(mkCourse({ name: k.kcmc, teacher: k.xm, room: k.cdmc, day: +k.xqj, start: +m[1], end: +(m[2] || m[1]), weeksText: k.zcd }));
+  }
+  return out;
+}
+function applyJw(d, list) {
+  if (d.periods && d.periods.length) S.settings.sections = d.periods.slice().sort((a, b) => a.n - b.n).map(p => `${p.s}-${p.e}`);
+  if (d.term) {
+    S.settings.termStart = d.term.start;
+    S.settings.totalWeeks = Math.ceil((Math.round((parseD(d.term.end) - parseD(d.term.start)) / 864e5) + 1) / 7);
+  }
+  S.courses = list;
+  S.kbSyncedAt = Date.now();
+  // "其它课程"：没有固定时间地点，格式如 "课程名老师(共7周)/7-8周,10-11周,16周/无"
+  S.otherCourses = (d.other || []).map(s => {
+    const parts = s.split('/');
+    return { text: parts[0], weeksText: parts[1] || '', weeks: parseWeeks(parts[1] || '') };
+  });
+}
+$('#jwOpen').onclick = () => {
+  if (!window.desktop) return toast('网页预览版不能嵌入登录窗口，请在桌面版里使用；也可以先用右边的粘贴导入', 4000);
+  window.desktop.openJw(S.settings.jwUrl);
+  toast('在弹出的窗口里登录，进入「教务系统」后回来点②', 4000);
+};
+$('#jwGrab').onclick = async () => {
+  if (!window.desktop) return toast('网页预览版不能抓取，请在桌面版里使用', 3000);
+  const btn = $('#jwGrab');
+  btn.disabled = true; btn.textContent = '读取中…';
+  let res;
+  try { res = await window.desktop.grabTimetable(); } finally { btn.disabled = false; btn.textContent = '② 抓取课表'; }
+  if (!res.ok) return toast(res.message, 5000);
+  jwMode = 'all';
+  handleJwData(res.data);
+};
+
+/* 用学号密码登录教务系统并导入（推荐方式） */
+function jwShow(state, text) {
+  $('#jwLoading').style.display = state === 'loading' ? '' : 'none';
+  $('#jwForm').style.display = state === 'form' ? '' : 'none';
+  if (text) $('#jwLoadingText').textContent = text;
+  $('#jwLogin').disabled = state !== 'form';
+}
+function jwFail(msg) { $('#jwErr').textContent = msg; }
+// 验证码只在学校要求时显示（一般是连续输错之后）
+function jwSetCaptcha(st) {
+  const need = !!(st && st.needCode && st.img);
+  $$('.jw-code').forEach(el => el.style.display = need ? '' : 'none');
+  if (need) $('#jwCaptcha').src = st.img;
+  $('#jwCode').value = '';
+}
+const jwNeedCode = () => $('#jwCode').closest('.row').style.display !== 'none';
+async function jwRefreshCaptcha() { jwSetCaptcha(await window.desktop.jwCaptcha()); }
+// 同步方式：all = 课表、考试、成绩都同步；grades = 只同步考试和成绩，不动课表（考试成绩页用）
+let jwMode = 'all';
+async function openJwImport(mode) {
+  if (!window.desktop) return toast('网页预览版不能登录教务系统，请在桌面版里使用', 3500);
+  jwMode = mode === 'grades' ? 'grades' : 'all';
+  $('#jwDlg h3').textContent = jwMode === 'grades' ? '同步考试和成绩' : '从教务系统同步';
+  $('#jwDlg h3 + .hint').textContent = jwMode === 'grades'
+    ? '用登录学校门户（统一身份认证）的学号和密码。只更新考试安排和成绩，不会改动你的课表。'
+    : '用登录学校门户（统一身份认证）的学号和密码。课表、考试安排、成绩、学期日期和上课时间会一起同步。';
+  jwFail('');
+  jwShow('loading', '正在连接教务系统…');
+  $('#jwDlg').showModal();
+  const res = await window.desktop.jwLoginStart();
+  if (!$('#jwDlg').open) return;
+  if (!res.ok) { jwShow('none'); return jwFail(res.message); }
+  if (res.loggedIn) { $('#jwDlg').close(); return handleJwData(res.data); }  // 之前的登录还有效
+  const cred = await window.desktop.credGet();
+  $('#jwUser').value = cred.user; $('#jwPass').value = cred.pass;
+  jwSetCaptcha(res);
+  jwShow('form');
+  // 记住了学号密码、又不需要验证码：直接帮你点登录
+  if (cred.user && cred.pass && !jwNeedCode()) return jwSubmit();
+  (!cred.user ? $('#jwUser') : !cred.pass ? $('#jwPass') : $('#jwCode')).focus();
+}
+async function jwSubmit() {
+  const user = $('#jwUser').value.trim(), pass = $('#jwPass').value, code = $('#jwCode').value.trim();
+  if (!user) { jwFail('请填写学号'); return $('#jwUser').focus(); }
+  if (!pass) { jwFail('请填写密码'); return $('#jwPass').focus(); }
+  if (jwNeedCode() && !code) { jwFail('请填写验证码：就是右边图片里的字，看不清可以点图片换一张'); return $('#jwCode').focus(); }
+  jwFail('');
+  jwShow('loading', jwMode === 'grades' ? '正在登录并同步考试和成绩…' : '正在登录并同步课表、考试和成绩…');
+  const res = await window.desktop.jwLoginSubmit({ user, pass, code: jwNeedCode() ? code : '' });
+  if (!$('#jwDlg').open) return;
+  if (!res.ok) {
+    jwShow('form');
+    let msg = res.message || '登录失败';
+    if (/验证码/.test(msg)) msg = '验证码不对，已经换了一张新的，请重新填写';
+    else if (/密码|用户名|账号|不存在|不正确/.test(msg)) msg += '。请检查学号和密码（忘了密码可以在学校门户找回）';
+    if ('needCode' in res) jwSetCaptcha(res);
+    if (jwNeedCode() && !/验证码/.test(msg)) msg += '。这次还需要填验证码';
+    jwFail(msg);
+    return (jwNeedCode() ? $('#jwCode') : $('#jwPass')).focus();
+  }
+  await window.desktop.credSet({ user, pass, remember: $('#jwRemember').checked });
+  $('#jwDlg').close();
+  handleJwData(res.data);
+}
+$$('[data-jw-import]').forEach(b => b.onclick = () => openJwImport('all'));
+$('#grSync').onclick = () => openJwImport('grades');
+$('#jwLogin').onclick = jwSubmit;
+$('#jwCancel').onclick = () => { $('#jwDlg').close(); };
+$('#jwDlg').addEventListener('close', () => window.desktop && window.desktop.jwLoginCancel());
+$('#jwCaptcha').onclick = $('#jwRefresh').onclick = () => jwRefreshCaptcha();
+['jwUser', 'jwPass', 'jwCode'].forEach(id => $('#' + id).onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) jwSubmit(); });
+
+// 考试安排、成绩、姓名：直接更新（不影响别的数据），返回导入了什么
+function applyJwExtras(d) {
+  const done = [];
+  if (d.exams) { S.exams = examsFromJw(d.exams); syncExamEvents(); done.push(`${S.exams.length} 场考试`); }
+  if (d.grades) { S.grades = gradesFromJw(d.grades); done.push(`${S.grades.length} 门成绩`); }
+  if (d.exams || d.grades) S.jwSyncedAt = Date.now();
+  if (d.name) S.settings.jwName = d.name;
+  return done;
+}
+function handleJwData(d) {
+  const onlyGrades = jwMode === 'grades';
+  jwMode = 'all';
+  const list = onlyGrades ? [] : coursesFromJw(d), done = applyJwExtras(d);
+  if (onlyGrades) {  // 考试成绩页：不碰课表
+    save(); renderAll();
+    if (!done.length) return toast('这次没读到考试和成绩，可以稍后再同步一次', 4000);
+    return toast('同步好了：' + done.join('、'), 4000);
+  }
+  if (list.length) {
+    const lines = [`${d.xnm}-${+d.xnm + 1} 学年第 ${d.xqm === '12' ? 2 : 1} 学期，共 ${list.length} 条课程`];
+    if (d.term) lines.push(`学期日期：${d.term.start} 至 ${d.term.end}`);
+    if (d.periods && d.periods.length) lines.push(`作息时间：每天 ${d.periods.length} 节，第 1 节 ${d.periods[0].s} 上课`);
+    if (d.other && d.other.length) lines.push(`\n另有 ${d.other.length} 门课部分周次没有固定时间，会在课程表上方提示：\n` + d.other.map(s => '· ' + s.split('/').slice(0, 2).join(' ')).join('\n'));
+    if (!S.courses.length || confirm('找到了你的课表：\n' + lines.join('\n') + '\n\n要导入吗？会替换现在的课表。')) {
+      applyJw(d, list);
+      done.unshift(`${list.length} 条课程`);
+    }
+  }
+  save(); viewWeek = termWeek(new Date()); renderAll(); fillSettings();
+  if (!done.length) return toast('教务系统里这个学期还没有课表、考试和成绩', 4000);
+  toast('同步好了：' + done.join('、') + ((d.warn || []).some(w => /考试|成绩/.test(w)) ? '（考试或成绩没读到，可以稍后再同步一次）' : ''), 5000);
+}
+
+/* ========== 考试成绩（教务系统同步） ========== */
+// 正方考试时间格式："2026-01-10(09:00-11:00)"
+function examsFromJw(items) {
+  const out = [];
+  for (const x of items) {
+    if (!x.kcmc) continue;
+    const m = String(x.kssj || '').match(/(\d{4}-\d{2}-\d{2})\D*(\d{1,2}:\d{2})?\D*(\d{1,2}:\d{2})?/);
+    out.push({ name: x.kcmc, date: m ? m[1] : '', start: m && m[2] ? m[2].padStart(5, '0') : '', end: m && m[3] ? m[3].padStart(5, '0') : '',
+      room: [x.cdxqmc, x.cdmc].filter(Boolean).join(' '), seat: x.zwh || '', title: x.ksmc || '', raw: x.kssj || '' });
+  }
+  return out.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+}
+function gradesFromJw(items) {
+  return items.filter(x => x.kcmc).map(x => ({ name: x.kcmc, score: String(x.cj ?? ''), gp: String(x.jd ?? ''), credit: String(x.xf ?? ''),
+    term: x.xnmmc ? `${x.xnmmc} 第${x.xqmmc === '12' || x.xqmmc === '2' ? 2 : 1}学期` : '', nature: x.kcxzmc || '', kind: x.ksxz || '' }));
+}
+// 考试自动放进日历和待办（type: task，标 src: exam）；重新同步时保留"已完成"状态
+function syncExamEvents() {
+  const old = {};
+  for (const e of S.events) if (e.src === 'exam') old[e.key] = e;
+  S.events = S.events.filter(e => e.src !== 'exam');
+  for (const x of S.exams) {
+    if (!x.date) continue;
+    const key = x.name + x.date, o = old[key];
+    S.events.push({ id: o ? o.id : uid(), title: `考试：${x.name}`, date: x.date, start: x.start, end: x.end, type: 'task',
+      note: [x.room, x.seat && `座位 ${x.seat}`].filter(Boolean).join(' · '), src: 'exam', key, ...(o && o.done ? { done: true, doneAt: o.doneAt } : {}) });
+  }
+}
+const passed = g => { const n = parseFloat(g.score); return isNaN(n) ? !/不及格|不合格|缺考/.test(g.score) : n >= 60; };
+function gpaOf(list) {
+  let w = 0, s = 0, cr = 0;
+  for (const g of list) {
+    const x = parseFloat(g.credit) || 0, p = parseFloat(g.gp);
+    if (!isNaN(p) && x) { w += x; s += p * x; }
+    if (passed(g)) cr += x;
+  }
+  return { gpa: w ? (s / w).toFixed(2) : '—', credits: +cr.toFixed(1) };
+}
+let grTerm = 'all';
+function renderGrades() {
+  const G = S.grades || [], E = S.exams || [];
+  $('#grSub').textContent = '登录教务系统，同步考试安排和各学期成绩；不会改动课表';
+  $('#grSyncAt').textContent = syncText(S.jwSyncedAt);
+  const terms = [...new Set(G.map(g => g.term).filter(Boolean))].sort().reverse();
+  if (grTerm !== 'all' && !terms.includes(grTerm)) grTerm = 'all';
+  const list = grTerm === 'all' ? G : G.filter(g => g.term === grTerm), st = gpaOf(list);
+  $('#grMeta').textContent = G.length ? `共 ${G.length} 门` : '';
+  $('#grStats').style.display = $('#grTerms').style.display = G.length ? '' : 'none';
+  $('#grStats').innerHTML = `<div class="stat"><b>${st.gpa}</b><span>平均学分绩点</span></div><div class="stat"><b>${st.credits}</b><span>已获学分</span></div><div class="stat"><b>${list.length}</b><span>门课程</span></div>`;
+  $('#grTerms').innerHTML = ['all', ...terms].map(t => `<button data-t="${esc(t)}" class="${t === grTerm ? 'on' : ''}">${t === 'all' ? '全部' : esc(t)}</button>`).join('');
+  $$('#grTerms button').forEach(b => b.onclick = () => { grTerm = b.dataset.t; renderGrades(); });
+  $('#grList').innerHTML = list.length ? '<div class="gr h"><span>课程</span><span class="r">学分</span><span class="r">成绩</span><span class="r">绩点</span></div>' + list.map(g =>
+    `<div class="gr"><span class="nm" title="${esc(g.name)}">${esc(g.name)}<small>${esc([g.nature, g.kind !== '正常考试' ? g.kind : ''].filter(Boolean).join(' · '))}</small></span><span class="r">${esc(g.credit)}</span><span class="r${passed(g) ? '' : ' fail'}">${esc(g.score)}</span><span class="r">${esc(g.gp)}</span></div>`).join('')
+    : '<div class="empty">还没有成绩<br>点右上角「从教务系统同步」</div>';
+  const t = todayStr();
+  $('#exList').innerHTML = E.length ? E.map(x => {
+    const d = x.date ? parseD(x.date) : null, days = d ? Math.round((d - parseD(t)) / 864e5) : null;
+    const tag = days === null ? '' : days < 0 ? '' : days === 0 ? '<span class="tag">今天</span>' : days === 1 ? '<span class="tag">明天</span>' : `<span class="tag${days > 7 ? ' gray' : ''}">${days} 天后</span>`;
+    return `<div class="exam${days !== null && days < 0 ? ' past' : ''}"><div class="dbox">${d ? `<b>${d.getMonth() + 1}/${d.getDate()}</b><span>周${WD[dow(d)]}</span>` : '<b>待定</b>'}</div>
+      <div class="tb"><div>${esc(x.name)}</div><div>${x.start ? `${x.start}${x.end ? '-' + x.end : ''}` : esc(x.raw)}${x.room ? ' · ' + esc(x.room) : ''}${x.seat ? ' · 座位 ' + esc(x.seat) : ''}</div></div>${tag}</div>`;
+  }).join('') : '<div class="empty">还没有考试安排<br>学校排好考试后，同步一次就会出现在这里</div>';
+}
+
+/* ========== 录课转文字（本地识别） ========== */
+const fmtSec = s => {
+  s = Math.floor(s);
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return (h ? h + ':' + pad(m) : m) + ':' + pad(x);
+};
+let asrFile = null, asrDuration = 0, asrT0 = 0;
+function pickAudio(f) {
+  asrFile = f;
+  $('#dropName').textContent = f.name;
+  $('#dropSub').textContent = `${(f.size / 1048576).toFixed(1)} MB · 点击可以换一个文件`;
+  const p = $('#player'); p.src = URL.createObjectURL(f); p.style.display = 'block';
+}
+const drop = $('#drop');
+drop.onclick = () => $('#audioFile').click();
+$('#audioFile').onchange = () => { const f = $('#audioFile').files[0]; if (f) pickAudio(f); };
+drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+drop.ondragleave = () => drop.classList.remove('over');
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); const f = e.dataTransfer.files[0]; if (f) pickAudio(f); };
+// 拖文件到窗口其他地方时，别让页面跳走
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => e.preventDefault());
+
+function setAsrUI(on) {
+  $('#asrBtn').disabled = on;
+  $('#asrCancel').style.display = on ? '' : 'none';
+  $('#asrProg').style.display = on ? '' : 'none';
+  if (on) { $('#asrProg i').style.width = '0'; $('#asrProgText').textContent = '正在加载识别模型…'; }
+}
+async function startAsr(ask = true) {
+  if (!asrFile) return toast('先选择一个录音文件，或者直接录音');
+  if (!window.desktop) return toast('本地语音识别需要在桌面版里使用', 3000);
+  const ta = $('#transcript');
+  if (ask && ta.value.trim() && !confirm('识别结果会替换下面现有的文字，继续？')) return;
+  ta.value = ''; asrDuration = 0; asrT0 = Date.now();
+  $('#audioCands').innerHTML = '';
+  curNoteId = null; showAiNote('');
+  // 软件里录的音已经存在硬盘上（recPath），选的文件由桌面版取到它的路径
+  const r = asrFile.recPath ? await window.desktop.asrStartPath(asrFile.recPath) : await window.desktop.asrStart(asrFile);
+  if (!r.ok) return toast(r.message);
+  setAsrUI(true);
+}
+$('#asrBtn').onclick = () => startAsr();
+
+/* 直接录音：每 5 秒把录到的一段写进硬盘（软件意外关掉也不会全丢），停下后自动识别 */
+let rec = null;
+function recUI() {
+  const on = !!rec, b = $('#recBtn');
+  b.classList.toggle('rec-on', on);
+  b.title = on ? '停止录音并开始识别' : '用电脑麦克风录课';
+  $('#asrBtn').disabled = on;
+  if (!on) { $('#recLabel').textContent = '一键录音'; return; }
+  const s = (Date.now() - rec.t0) / 1000;
+  $('#recLabel').innerHTML = `<span class="row" style="gap:8px;display:inline-flex"><span class="rec-dot"></span><span class="rec-time">${fmtSec(s)}</span></span>`;
+  $('#recState').textContent = '正在录音 · 再点一下停止并转成文字（可以缩小窗口，别关掉软件）';
+}
+$('#recBtn').onclick = async () => {
+  if (rec) return stopRec();
+  if (!window.desktop) return toast('录音需要在桌面版里使用');
+  let stream;
+  const micHelp = window.desktop.platform === 'darwin' ? '系统设置 → 隐私与安全性 → 麦克风 里打开河传答哒' : 'Windows 设置 → 隐私 → 麦克风 里允许使用';
+  // Mac 要先向系统要麦克风权限
+  if (window.desktop.micAccess && !(await window.desktop.micAccess())) return toast('没有麦克风权限：在' + micHelp, 6000);
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true } }); }
+  catch (e) { return toast('打不开麦克风：检查一下电脑有没有麦克风，或者在 ' + micHelp, 6000); }
+  const id = await window.desktop.recBegin();
+  const mr = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 32000 });
+  let chain = Promise.resolve();
+  mr.ondataavailable = e => { if (e.data.size) chain = chain.then(async () => window.desktop.recAppend(id, await e.data.arrayBuffer())); };
+  mr.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop());
+    await chain;
+    const path = await window.desktop.recEnd(id), secs = (Date.now() - rec.t0) / 1000;
+    clearInterval(rec.timer); rec = null; recUI();
+    $('#recState').textContent = `录好了 ${fmtSec(secs)}，录音保存在软件的数据文件夹里`;
+    const name = `课堂录音 ${mdText(new Date())} ${nowHM()}`;
+    asrFile = { name, recPath: path, size: 0 };
+    $('#dropName').textContent = name;
+    $('#dropSub').textContent = `录音 ${fmtSec(secs)} · 点击可以换成别的文件`;
+    $('#player').src = 'file:///' + encodeURI(path.replace(/\\/g, '/')).replace(/#/g, '%23'); $('#player').style.display = 'block';
+    startAsr(false);
+  };
+  mr.start(5000);
+  rec = { mr, t0: Date.now(), timer: setInterval(recUI, 1000) };
+  recUI();
+};
+function stopRec() { if (rec && rec.mr.state !== 'inactive') rec.mr.stop(); }
+$('#asrCancel').onclick = () => { window.desktop.asrCancel(); setAsrUI(false); toast('已取消识别'); };
+if (window.desktop) window.desktop.onAsr(m => {
+  if (m.type === 'duration') asrDuration = m.duration;
+  else if (m.type === 'text') {
+    const ta = $('#transcript');
+    ta.value += `[${fmtSec(m.start)}] ${m.text}\n`;
+    ta.scrollTop = ta.scrollHeight;
+  } else if (m.type === 'progress') {
+    const pct = asrDuration ? Math.min(100, m.seconds / asrDuration * 100) : 0;
+    $('#asrProg i').style.width = pct + '%';
+    $('#asrProgText').textContent = `已识别 ${fmtSec(m.seconds)}` + (asrDuration ? ` / ${fmtSec(asrDuration)}（${pct.toFixed(0)}%）` : '');
+  } else if (m.type === 'done') {
+    setAsrUI(false);
+    toast(`识别完成：${fmtSec(m.seconds)} 的录音，用时 ${fmtSec((Date.now() - asrT0) / 1000)}`, 4000);
+  } else if (m.type === 'error') {
+    setAsrUI(false);
+    toast('识别失败：' + m.message, 5000);
+  }
+});
+
+const plainTranscript = () => $('#transcript').value.replace(/^\[[\d:]+\]\s*/gm, '');
+$('#copyText').onclick = async () => {
+  const t = plainTranscript().trim();
+  if (!t) return toast('还没有文字');
+  try { await navigator.clipboard.writeText(t); toast('已复制（不含时间点）'); } catch (e) { toast('复制失败，请手动选中复制'); }
+};
+$('#findTasks').onclick = async () => {
+  const t = plainTranscript().trim();
+  if (!t) return toast('还没有文字');
+  // 填了 AI 就用 AI 找（能理解上下文），没填用本地规则
+  if (aiReady()) {
+    const btn = $('#findTasks'), old = btn.textContent;
+    btn.disabled = true; btn.textContent = 'AI 正在找…';
+    const r = await aiExtract(t, new Date(), '课堂录音的转写文字（可能有同音错字）');
+    btn.disabled = false; btn.textContent = old;
+    if (!r.ok) return toast(r.message, 5000);
+    if (!r.list.length) { $('#audioCands').innerHTML = ''; return toast('AI 没有找到带时间的作业、考试或安排'); }
+    return renderCands($('#audioCands'), r.list, '课上提到的作业 / 考试 / 安排');
+  }
+  const list = parseChat(t, new Date()).filter(e => e.type === 'task');
+  if (!list.length) { $('#audioCands').innerHTML = ''; return toast('没有找到带时间的作业或考试'); }
+  renderCands($('#audioCands'), list, '提到的作业 / 考试');
+};
+// 当前打开的是哪条历史记录：再保存就更新它，不重复新建
+let curNoteId = null;
+$('#saveNote').onclick = () => {
+  const transcript = $('#transcript').value.trim();
+  if (!transcript) return toast('还没有文字');
+  const old = S.notes.find(n => n.id === curNoteId);
+  if (old) Object.assign(old, { transcript, aiNote: aiNoteText });
+  else {
+    curNoteId = uid();
+    S.notes.unshift({ id: curNoteId, date: todayStr(), title: asrFile ? asrFile.name.replace(/\.[^.]+$/, '') : plainTranscript().trim().slice(0, 16), transcript, aiNote: aiNoteText });
+  }
+  save(); renderNotes(); toast('已保存');
+};
+// 历史记录 + 搜索：在标题、转写文字、AI 笔记里找关键词，显示命中的那一小段
+function snippet(text, q) {
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if (i < 0) return '';
+  const a = Math.max(0, i - 14), s = text.slice(a, i + q.length + 22).replace(/\s+/g, ' ');
+  return (a ? '…' : '') + esc(s).replace(new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark>${m}</mark>`);
+}
+function renderNotes() {
+  const q = $('#noteQ').value.trim();
+  const list = q ? S.notes.filter(n => [n.title, n.transcript, n.aiNote].some(t => (t || '').toLowerCase().includes(q.toLowerCase()))) : S.notes;
+  $('#notes').innerHTML = list.length ? list.map(n => {
+    const snip = q ? snippet(n.aiNote || '', q) || snippet(n.transcript || '', q) : '';
+    return `<div class="list-item" data-id="${n.id}"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--muted)"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+      <div style="flex:1;min-width:0"><div>${q ? snippet(n.title, q) || esc(n.title) : esc(n.title)}${n.aiNote ? ' <span class="tag gray">有笔记</span>' : ''}</div>${snip ? `<div class="note-snip">${snip}</div>` : ''}</div>
+      <span class="hint">${n.date}</span><span class="del" title="删除">×</span></div>`;
+  }).join('') : `<div class="empty">${q ? '没有找到包含「' + esc(q) + '」的笔记' : '保存过的录课文字和笔记会出现在这里'}</div>`;
+  $$('#notes .list-item').forEach(el => el.onclick = e => {
+    const n = S.notes.find(x => x.id === el.dataset.id);
+    if (e.target.classList.contains('del')) {
+      if (!confirm(`删除「${n.title}」？`)) return;
+      S.notes = S.notes.filter(x => x !== n);
+      if (curNoteId === n.id) curNoteId = null;
+      save(); return renderNotes();
+    }
+    curNoteId = n.id;
+    const ta = $('#transcript');
+    ta.value = n.transcript || '';
+    $('#audioCands').innerHTML = '';
+    showAiNote(n.aiNote || '');
+    // 搜索打开的：在文字里选中第一个命中的地方
+    const i = q ? ta.value.toLowerCase().indexOf(q.toLowerCase()) : -1;
+    if (i >= 0) { ta.focus(); ta.setSelectionRange(i, i + q.length); ta.scrollTop = Math.max(0, ta.value.slice(0, i).split('\n').length - 3) * 23; }
+  });
+}
+$('#noteQ').oninput = renderNotes;
+
+/* ========== 聊天记录 → 日程（本地规则） ========== */
+const CN = { 零: 0, 〇: 0, 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
+function cnNum(s) {
+  if (/^\d+$/.test(s)) return +s;
+  const m = s.match(/^([一二两三四五六七八九])?十([一二三四五六七八九])?$/);
+  if (m) return (m[1] ? CN[m[1]] : 1) * 10 + (m[2] ? CN[m[2]] : 0);
+  return s.length === 1 && s in CN ? CN[s] : NaN;
+}
+const NUM = '\\d{1,2}|[零〇一二两三四五六七八九十]{1,3}';
+function validDate(y, m, d) { const x = new Date(y, m - 1, d); return x.getMonth() === m - 1 ? x : null; }
+
+// 按性质分类型：课程作业考试 → 作业/考试；活动比赛征稿即使有"提交截止"也算活动；剩下有截止的算作业。
+// 一个关键词都没有返回空（AI 识别时就用 AI 自己的判断）
+function typeOf(s) {
+  if (/(作业|报告|论文|考试|测验|期中|期末|答辩|小测)/.test(s)) return 'task';
+  if (/(活动|比赛|大赛|征集|征稿|评选|招募|报名)/.test(s)) return 'event';
+  if (/(截止|ddl|DDL|之前|前交|提交)/.test(s)) return 'task';
+  return '';
+}
+function extractOne(s, ref) {
+  let date = null, m;
+  if ((m = s.match(new RegExp(`(${NUM})月(${NUM})[日号]?`)))) {
+    const mo = cnNum(m[1]), d = cnNum(m[2]);
+    date = validDate(ref.getFullYear(), mo, d);
+    if (date && date < addDays(ref, -60)) date = validDate(ref.getFullYear() + 1, mo, d);
+  } else if ((m = s.match(/(?<![\d.])(\d{1,2})[.\/](\d{1,2})(?![\d.]|\s*[点时%])/)) && +m[1] <= 12) {
+    date = validDate(ref.getFullYear(), +m[1], +m[2]);
+  } else if ((m = s.match(/(大后天|后天|明天|明日|明早|明晚|今天|今日|今早|今晚)/))) {
+    date = addDays(ref, /大后天/.test(m[1]) ? 3 : /后天/.test(m[1]) ? 2 : /明/.test(m[1]) ? 1 : 0);
+  } else if ((m = s.match(/(下下|下个?|这个?|本|上个?)?(?:周|星期|礼拜)([一二三四五六日天1-7])/))) {
+    const idx = /\d/.test(m[2]) ? +m[2] : '一二三四五六日'.indexOf(m[2].replace('天', '日')) + 1;
+    const mon = addDays(ref, -(dow(ref) - 1));
+    let off = 0;
+    if (m[1]) off = m[1].startsWith('下下') ? 14 : m[1].startsWith('下') ? 7 : m[1].startsWith('上') ? -7 : 0;
+    date = addDays(mon, off + idx - 1);
+    if (!m[1] && date < ref && fmt(date) !== fmt(ref)) date = addDays(date, 7);
+  } else if ((m = s.match(/(?<![\d月])(\d{1,2})[号日](?![\d])/))) {
+    date = validDate(ref.getFullYear(), ref.getMonth() + 1, +m[1]);
+    if (date && date < ref && fmt(date) !== fmt(ref)) date = validDate(ref.getFullYear(), ref.getMonth() + 2, +m[1]);
+  }
+
+  let time = '';
+  const per = (s.match(/(早上|早晨|上午|中午|下午|傍晚|晚上|今晚|明晚)/) || [])[1] || '';
+  if ((m = s.match(new RegExp(`(${NUM})\\s*(?:[:：](\\d{2})|[点时](半|一刻|三刻|${NUM})?分?)`)))) {
+    let h = cnNum(m[1]), mi = 0;
+    if (m[2]) mi = +m[2];
+    else if (m[3]) mi = m[3] === '半' ? 30 : m[3] === '一刻' ? 15 : m[3] === '三刻' ? 45 : cnNum(m[3]);
+    if (/下午|傍晚|晚上|今晚|明晚/.test(per) && h < 12) h += 12;
+    if (per === '中午' && h < 11) h += 12;
+    if (h <= 24 && mi < 60 && !isNaN(h) && !isNaN(mi)) time = `${pad(h % 24)}:${pad(mi)}`;
+  }
+  if (!time && (m = s.match(new RegExp(`第(${NUM})(?:[-~到至](?:${NUM}))?节`)))) time = secTime(cnNum(m[1]))[0];
+  if (!date && time && per) date = ref;
+  if (!date) return null;
+  // 只有"今天""明天"、没有具体时间也没有事情的闲聊不算
+  if (!time && !/(交|截止|考|课|会|活动|报名|集合|开|讲座|比赛|上课|调|补|停|ddl|DDL|作业|报到|面试|彩排|拍摄|值班|培训|放假|返校|检查)/.test(s)) return null;
+
+  const type = typeOf(s) || 'event';
+  let title = s.replace(/@\S+\s?/g, '').replace(/^[^：:\d]{1,12}[：:]\s*/, '').trim();
+  if (title.length > 40) title = title.slice(0, 40) + '…';
+  return { title, date: fmt(date), time, type, note: s.trim() };
+}
+function parseChat(text, refDate) {
+  const out = [], seen = new Set();
+  let ref = new Date(refDate);
+  for (const raw of text.split(/\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    // 聊天记录里"昵称 2026/10/20 09:12"这种消息头：只用来更新参考日期
+    const hm = line.match(/(\d{4})[-\/年](\d{1,2})[-\/月](\d{1,2})日?\s+\d{1,2}:\d{2}(?::\d{2})?\s*$/);
+    if (hm && line.length - hm[0].length < 25) { ref = new Date(+hm[1], +hm[2] - 1, +hm[3]); continue; }
+    if (/^\S{0,20}\s*\d{1,2}:\d{2}(:\d{2})?$/.test(line)) continue;
+    for (const s of line.split(/[。！!？?；;]/)) {
+      if (s.trim().length < 3) continue;
+      const r = extractOne(s, ref);
+      if (!r) continue;
+      const k = r.title + r.date + r.time;
+      if (!seen.has(k)) { seen.add(k); out.push(r); }
+    }
+  }
+  return out;
+}
+
+/* 候选日程（聊天识别 / 录课转文字共用） */
+function renderCands(el, list, heading) {
+  if (!list || !list.length) { el.innerHTML = heading ? '' : '<div class="empty">没有找到带时间的事项</div>'; return; }
+  el.innerHTML = (heading ? `<div class="card-h" style="margin-top:20px"><h3>${heading}</h3></div>` : '') + list.map(c => `<div class="cand">
+    <div class="row"><input type="checkbox" checked><input type="text" value="${esc(c.title)}" title="${esc(c.note || '')}" style="flex:1;min-width:0"></div>
+    <div class="row" style="padding-left:24px;margin-top:8px"><input type="date" value="${esc(c.date || '')}"><input type="time" value="${esc(c.time || '')}">
+    <select>${['task', 'event', 'other'].map(t => `<option value="${t}"${(c.type || 'event') === t ? ' selected' : ''}>${TYPE_NAME[t]}</option>`).join('')}</select></div>
+  </div>`).join('') + '<div class="row" style="margin-top:14px"><button class="primary">把勾选的加入日历</button></div>';
+  el.querySelector('button.primary').onclick = () => {
+    let n = 0;
+    el.querySelectorAll('.cand').forEach((tr, i) => {
+      const [chk, title, date, time] = tr.querySelectorAll('input'), type = tr.querySelector('select').value;
+      if (!chk.checked || !title.value.trim() || !date.value) return;
+      S.events.push({ id: uid(), title: title.value.trim(), date: date.value, start: time.value, end: '', type, note: list[i].note || '' });
+      n++;
+    });
+    if (!n) return toast('没有可以加入的条目（需要标题和日期）');
+    save(); renderAll(); toast(`已加入 ${n} 条日程`);
+    el.querySelector('button.primary').disabled = true;
+  };
+}
+$('#chatLocal').onclick = () => {
+  const text = $('#chatText').value.trim();
+  if (!text) return toast('先粘贴聊天记录');
+  renderCands($('#chatCands'), parseChat(text, parseD($('#refDate').value || todayStr())));
+};
+$('#chatAi').onclick = async () => {
+  const text = $('#chatText').value.trim();
+  if (!text) return toast('先粘贴聊天记录');
+  if (!aiReady()) return needAi();
+  const ref = parseD($('#refDate').value || todayStr());
+  $('#chatAi').disabled = $('#chatLocal').disabled = true;
+  $('#chatAiStop').style.display = '';
+  $('#chatAiHint').textContent = 'AI 正在识别…';
+  const r = await aiExtract(text, ref, '班级群 / QQ / 微信的聊天记录');
+  $('#chatAi').disabled = $('#chatLocal').disabled = false;
+  $('#chatAiStop').style.display = 'none';
+  $('#chatAiHint').textContent = '';
+  if (!r.ok) return toast(r.message, 5000);
+  renderCands($('#chatCands'), r.list);
+};
+$('#chatAiStop').onclick = () => window.desktop.aiCancel();
+
+/* ========== 桌面小组件页面 ==========
+   上面：已经放到桌面上的小组件，选中一个在右边调整，左边是实时预览；下面：所有种类，带预览，点一下添加。
+   画法和桌面上的小组件是同一份（widget-kit.js），数据就是 snapshot() */
+const WG = { list: [], off: false, sel: '' };
+async function wgLoad() {
+  if (window.desktop?.widgetsList) { const r = await window.desktop.widgetsList(); if (r) { WG.list = r.list; WG.off = r.off; } }
+  if (!WG.list.some(w => w.id === WG.sel)) WG.sel = WG.list[0]?.id || '';
+  renderWidgetsPage();
+}
+const wgCur = () => WG.list.find(w => w.id === WG.sel);
+// 把一个小组件画进 holder，缩放到放得下（留 pad 的边）
+function wgPreview(holder, D, cfg, pad = 24) {
+  holder.innerHTML = '<div class="wg-sc"><div></div></div>';
+  const sc = holder.firstChild, c = sc.firstChild;
+  WK.apply(c, D, cfg, S.settings.theme || 'light', false);
+  requestAnimationFrame(() => {
+    const r = c.getBoundingClientRect(), w = r.width, h = r.height;  // 这时 wg-sc 还没缩放，量到的就是原大小（含 zoom）
+    if (w) sc.style.transform = `translate(-50%,-50%) scale(${Math.min(1, (holder.clientWidth - pad * 2) / w, (holder.clientHeight - pad * 2) / h)})`;
+  });
+}
+function renderWidgetsPage() {
+  const D = snapshot(), desk = !!window.desktop?.widgetsList;
+  $('#wgShow').checked = !WG.off; $('#wgShow').disabled = !desk;
+  // ---- 我的小组件 ----
+  const mine = $('#wgMine'), w = wgCur();
+  if (!desk) mine.innerHTML = '<div class="wg-empty">桌面小组件要在桌面版里使用</div>';
+  else if (!w) mine.innerHTML = '<div class="wg-empty">桌面上还没有小组件。从下面挑一个，点「添加到桌面」</div>';
+  else {
+    const n = {};
+    mine.innerHTML = `<div class="wg-tabs"><span class="hint">桌面上的 ${WG.list.length} 个：</span>${WG.list.map(x => {
+      n[x.type] = (n[x.type] || 0) + 1;
+      const a = WK.ACCENTS[x.accent] || WK.ACCENTS.clay;
+      return `<button class="wg-tab${x.id === WG.sel ? ' on' : ''}" data-id="${x.id}"><i style="background:${a[0]}"></i>${WK.TYPES[x.type].name}${WG.list.filter(y => y.type === x.type).length > 1 ? ' ' + n[x.type] : ''}</button>`;
+    }).join('')}</div>
+      <div class="wg-ed"><div class="wg-stage" id="wgStage"></div><div class="wg-ctl" id="wgCtl"></div></div>`;
+    mine.querySelectorAll('.wg-tab').forEach(b => b.onclick = () => { WG.sel = b.dataset.id; renderWidgetsPage(); });
+    wgStage(D);
+    wgControls(w);
+  }
+  // ---- 添加小组件 ----
+  const gal = $('#wgGallery');
+  gal.innerHTML = Object.entries(WK.TYPES).map(([k, t]) => `<div class="card wg-g"><div class="wg-pv" data-pv="${k}"></div>
+    <div class="wg-gt"><b>${t.name}</b><span class="hint">${t.desc}</span></div>
+    <div class="wg-ga"><button class="primary" data-add="${k}" ${desk ? '' : 'disabled'}>＋ 添加到桌面</button>${WG.list.some(x => x.type === k) ? '<span class="hint">桌面上已经有了</span>' : ''}</div></div>`).join('');
+  gal.querySelectorAll('[data-pv]').forEach(h => wgPreview(h, D, { ...WK.defaults(h.dataset.pv) }, 18));
+  gal.querySelectorAll('[data-add]').forEach(b => b.onclick = async () => {
+    const id = await window.desktop.widgetsAdd(b.dataset.add);
+    if (!id) return;
+    WG.sel = id;
+    await wgLoad();
+    toast(`「${WK.TYPES[b.dataset.add].name}」已经放到桌面右上角了，按住可以拖到别处`, 3500);
+    $('#wgMine').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+const wgStage = (D = snapshot()) => { const w = wgCur(); if (w) wgPreview($('#wgStage'), D, w, 28); };
+// 改一项：本地马上重画预览，同时让桌面上那个跟着变
+function wgSet(patch, redrawControls = true) {
+  const w = wgCur(); if (!w) return;
+  Object.assign(w, patch);
+  window.desktop.widgetsUpdate(w.id, patch);
+  wgStage();
+  if (redrawControls) wgControls(w);
+}
+function wgControls(w) {
+  const t = WK.TYPES[w.type], dark = WK.themeOf(w, S.settings.theme).includes('dark');
+  const cdOn = w.type === 'countdown' || w.type === 'overview';
+  $('#wgCtl').innerHTML = `
+    <div><b style="font-size:16px">${t.name}</b><div class="hint">${t.desc}</div></div>
+    <div class="wg-f"><span class="lb">主题</span><div class="wg-chips">${WK.THEMES.map(([k, n]) => `<button data-theme="${k}" class="${w.theme === k ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+    <div class="wg-f"><span class="lb">强调色</span><div class="wg-sws">${Object.entries(WK.ACCENTS).map(([k, a]) => `<button data-acc="${k}" class="${w.accent === k ? 'on' : ''}" title="${a[2]}" style="background:${dark ? a[1] : a[0]}"></button>`).join('')}</div></div>
+    <div class="wg-f"><span class="lb">大小</span><div class="seg">${WK.SIZES.map(([k, n]) => `<button data-size="${k}" class="${w.size === k ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+    <div class="wg-f"><label id="wgOpL">不透明度 ${Math.round(w.opacity * 100)}%</label><input type="range" min="40" max="100" step="5" value="${Math.round(w.opacity * 100)}" id="wgOp"></div>
+    ${cdOn ? `<div class="wg-f"><span class="lb">倒计时</span><div class="row" style="flex-wrap:nowrap"><input id="wgCdT" placeholder="比如：英语四级" value="${esc(w.countdown?.title || '')}" style="flex:1;min-width:0"><input type="date" id="wgCdD" value="${esc(w.countdown?.date || '')}" style="width:150px"></div><p class="hint" style="margin:6px 0 0">不填就自动显示最近的一场考试</p></div>` : ''}
+    ${w.type === 'overview' ? `<div class="wg-f"><span class="lb">显示哪些内容（上下调整顺序）</span><div class="wg-mods">${w.modules.map((m, i) => `<div class="m${m.on ? '' : ' off'}"><input type="checkbox" data-mod="${i}" ${m.on ? 'checked' : ''}><span>${WK.MOD_NAME[m.id]}</span>
+      <button class="mv" data-up="${i}" ${i ? '' : 'disabled'} title="上移"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="m6 15 6-6 6 6"/></svg></button>
+      <button class="mv" data-down="${i}" ${i < w.modules.length - 1 ? '' : 'disabled'} title="下移"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="m6 9 6 6 6-6"/></svg></button></div>`).join('')}</div></div>` : ''}
+    <div class="wg-f" style="display:flex;flex-direction:column;gap:6px"><label class="row" style="gap:8px;color:var(--text);font-size:13.5px;margin:0"><input type="checkbox" id="wgTop" ${w.top ? 'checked' : ''}>总在其他窗口上面</label>
+      <label class="row" style="gap:8px;color:var(--text);font-size:13.5px;margin:0"><input type="checkbox" id="wgLock" ${w.locked ? 'checked' : ''}>锁定位置（不能拖动）</label></div>
+    <div class="row" style="margin-top:auto"><button id="wgLocate">在桌面上找到它</button><button class="ghost danger" id="wgDel">从桌面拿掉</button></div>`;
+  const C = $('#wgCtl');
+  C.querySelectorAll('[data-theme]').forEach(b => b.onclick = () => wgSet({ theme: b.dataset.theme }));
+  C.querySelectorAll('[data-acc]').forEach(b => b.onclick = () => { wgSet({ accent: b.dataset.acc }); renderWidgetsPage(); });
+  C.querySelectorAll('[data-size]').forEach(b => b.onclick = () => wgSet({ size: b.dataset.size }));
+  $('#wgOp').oninput = () => { $('#wgOpL').textContent = `不透明度 ${$('#wgOp').value}%`; wgSet({ opacity: +$('#wgOp').value / 100 }, false); };
+  if (cdOn) $('#wgCdT').onchange = $('#wgCdD').onchange = () => {
+    const title = $('#wgCdT').value.trim(), date = $('#wgCdD').value;
+    if (title && !date) return toast('再选一下日期');
+    wgSet({ countdown: title && date ? { title, date } : null }, false);
+  };
+  C.querySelectorAll('[data-mod]').forEach(x => x.onchange = () => { const m = w.modules.map(y => ({ ...y })); m[+x.dataset.mod].on = x.checked; wgSet({ modules: m }); });
+  const move = (i, d) => { const m = w.modules.map(y => ({ ...y })); [m[i], m[i + d]] = [m[i + d], m[i]]; wgSet({ modules: m }); };
+  C.querySelectorAll('[data-up]').forEach(b => b.onclick = () => move(+b.dataset.up, -1));
+  C.querySelectorAll('[data-down]').forEach(b => b.onclick = () => move(+b.dataset.down, 1));
+  $('#wgTop').onchange = () => wgSet({ top: $('#wgTop').checked }, false);
+  $('#wgLock').onchange = () => wgSet({ locked: $('#wgLock').checked }, false);
+  $('#wgLocate').onclick = () => { if (WG.off) return toast('现在桌面上的小组件都藏起来了，先勾上右上角的「在桌面上显示」'); window.desktop.widgetsLocate(w.id); };
+  $('#wgDel').onclick = async () => { await window.desktop.widgetsRemove(w.id); WG.sel = ''; wgLoad(); };
+}
+$('#wgShow').onchange = async () => { await window.desktop.widgetsSetOff(!$('#wgShow').checked); wgLoad(); };
+if (window.desktop?.onWidgetsChanged) {
+  window.desktop.onWidgetsChanged(() => { if (curView === 'widgets') wgLoad(); });
+  // 小组件上的笔 / 托盘菜单：打开这个页面（选中那一个）
+  window.desktop.onWidgetsEdit(id => { if (id) WG.sel = id; if (curView === 'widgets') wgLoad(); else go('widgets'); });
+}
+
+/* ========== 自己画的窗口按钮（桌面版才有；网页预览还是浏览器自己的） ========== */
+if (window.desktop?.winCtl) {
+  document.body.classList.add('frameless');
+  // Mac：窗口按钮用系统的；说到托盘、右下角、Ctrl 的地方换成 Mac 的说法
+  if (window.desktop.platform === 'darwin') {
+    document.body.classList.add('mac');
+    document.querySelectorAll('[data-mac]').forEach(el => el.textContent = el.dataset.mac);
+  }
+  $$('#titlebar [data-w]').forEach(b => b.onclick = () => window.desktop.winCtl(b.dataset.w));
+  window.desktop.onWinState(s => {
+    document.body.classList.toggle('win-max', !!s.max);
+    document.body.classList.toggle('win-blur', !s.focus);
+  });
+}
+
+/* ========== 桌宠：拖给它的文字在这里识别（和「聊天识别」一样，AI 优先，用不了就用本地规则），结果回给桌宠 ========== */
+const petLabel = c => { const d = parseD(c.date); return `${d.getMonth() + 1}月${d.getDate()}日 周${WD[dow(d)]}${c.time ? ' ' + c.time : ''}`; };
+async function petRecognize(text) {
+  const ref = parseD(todayStr());
+  let r = null;
+  if (aiReady()) {
+    r = await aiExtract(text, ref, '班级群 / 钉钉 / 微信 / QQ 的聊天记录');
+    if (!r.ok && /上一个还在处理/.test(r.message)) return { ok: false, message: '主窗口里的 AI 还在忙，等它弄完再拖给我' };
+  }
+  const list = r && r.ok ? r.list : parseChat(text, ref);
+  return { ok: true, list: list.map(c => ({ ...c, label: petLabel(c) })), local: !(r && r.ok), why: r && !r.ok ? r.message : '' };
+}
+/* 桌面小组件和桌宠用的一份"现在的情况"：今天的安排、正在上 / 下一节课、待办、本周、学期、最近的考试 */
+function lunarFull(d) {
+  try {
+    let m = '', day = 0;
+    for (const p of LUNAR.formatToParts(d)) { if (p.type === 'month') m = p.value; if (p.type === 'day') day = +p.value; }
+    return m + (LDAY[day] || '');
+  } catch (e) { return ''; }
+}
+function snapshot() {
+  const now = new Date(), today = todayStr(), d0 = parseD(today), hm = nowHM();
+  const items = itemsFor(today).map(i => ({ kind: i.kind, id: i.id, title: i.title, start: i.start, end: i.end, type: i.type, done: !!i.done, room: i.room || '' }));
+  const courses = items.filter(i => i.kind === 'course' && i.start);
+  const cur = courses.find(c => c.start <= hm && hm < (c.end || c.start)) || null;
+  let next = courses.find(c => c.start > hm);
+  if (next) next = { ...next, isToday: true };
+  else for (let k = 1; k <= 7 && !next; k++) {
+    const d = addDays(d0, k), c = itemsFor(fmt(d)).find(i => i.kind === 'course' && i.start);
+    if (c) next = { title: c.title, start: c.start, end: c.end, room: c.room || '', isToday: false, when: k === 1 ? '明天' : k === 2 ? '后天' : `周${WD[dow(d)]}` };
+  }
+  const tmr = itemsFor(fmt(addDays(d0, 1))).find(i => i.kind === 'course' && i.start);
+  const from = fmt(addDays(d0, -14));
+  const tasks = S.events.filter(e => e.type === 'task' && !e.done && e.date >= from)
+    .sort((a, b) => (a.date + (a.start || '99')).localeCompare(b.date + (b.start || '99')))
+    .slice(0, 8).map(e => ({ id: e.id, title: e.title, date: e.date, start: e.start || '' }));
+  const mon = addDays(d0, -(dow(d0) - 1));
+  const week = Array.from({ length: 7 }, (_, k) => {
+    const d = addDays(mon, k), ds = fmt(d), it = itemsFor(ds);
+    return { date: ds, day: d.getDate(), wd: WD[k + 1], isToday: ds === today, n: it.length, types: [...new Set(it.map(x => x.type === 'other' ? 'event' : x.type))],
+      items: it.map(x => ({ title: x.title, start: x.start || '', type: x.type })) };
+  });
+  // 月历：这个月六行，每天有哪几类安排
+  const first = new Date(d0.getFullYear(), d0.getMonth(), 1), m0 = addDays(first, -(dow(first) - 1));
+  const month = { title: `${d0.getFullYear()}年${d0.getMonth() + 1}月`, days: Array.from({ length: 42 }, (_, k) => {
+    const d = addDays(m0, k), ds = fmt(d);
+    return { d: d.getDate(), out: d.getMonth() !== d0.getMonth(), today: ds === today, types: [...new Set(itemsFor(ds).map(x => x.type === 'other' ? 'event' : x.type))] };
+  }) };
+  const exam = S.events.filter(e => e.date >= today && (e.src === 'exam' || (/考试|期中|期末|测验|四级|六级/.test(e.title) && !/报名|缴费|报考/.test(e.title))))
+    .sort((a, b) => a.date.localeCompare(b.date))[0];
+  const tw = termWeek(d0);
+  return {
+    today, md: mdText(d0), wd: WD[dow(d0)], lunar: lunarFull(d0), name: displayName(),
+    term: { week: tw, total: S.settings.totalWeeks, inTerm: inTerm(tw), dow: dow(d0) },
+    items, cur, next: next || null, firstCourse: courses[0] || null, tomorrowFirst: tmr ? { title: tmr.title, start: tmr.start } : null,
+    todayCourses: courses.length, dueToday: S.events.filter(e => e.type === 'task' && !e.done && e.date === today).length,
+    hasCourses: S.courses.length > 0, tasks, week, month, exam: exam ? { title: exam.title, date: exam.date } : null
+  };
+}
+if (window.desktop?.onPetAsk) window.desktop.onPetAsk(async m => {
+  let r = { ok: true };
+  try {
+    if (m.type === 'snapshot') r = snapshot();
+    else if (m.type === 'toggleDone') {
+      const e = S.events.find(x => x.id === m.eid);
+      if (e) { e.done = !e.done; save(); renderAll(); }
+    } else if (m.type === 'openItem') {
+      if (document.querySelector('dialog[open]')) document.querySelectorAll('dialog[open]').forEach(d => d.close());
+      openItem(m.kind, m.iid);
+    }
+    else if (m.type === 'recognize') r = await petRecognize(m.text);
+    else if (m.type === 'add') {
+      let n = 0, dup = 0;
+      for (const c of m.list) {
+        if (!c.title || !/^\d{4}-\d{2}-\d{2}$/.test(c.date || '')) continue;
+        if (S.events.some(e => e.title === c.title && e.date === c.date && (e.start || '') === (c.time || ''))) { dup++; continue; }
+        S.events.push({ id: uid(), title: String(c.title).slice(0, 60), date: c.date, start: c.time || '', end: '', type: ['task', 'event', 'other'].includes(c.type) ? c.type : 'event', note: c.note || '' });
+        n++;
+      }
+      if (n) { save(); renderAll(); toast(`桌宠帮你加了 ${n} 条日程`); }
+      r = { ok: true, n, dup };
+    } else if (m.type === 'open') {
+      go('chat');
+      $('#chatText').value = m.text;
+      renderCands($('#chatCands'), m.list);
+    }
+  } catch (e) { console.warn('桌宠请求出错', e); r = { ok: false, message: '出了点问题，再试一次吧' }; }
+  window.desktop.petReply(m.id, r);
+});
+
+/* ========== AI（设置在「设置 → AI 功能」，请求由桌面版主进程发出，Key 不在网页里） ========== */
+const AI_PRESETS = [
+  { id: 'zhipu', name: '智谱 GLM-4.7-Flash（免费）', base: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4.7-flash', keyUrl: 'https://bigmodel.cn/usercenter/proj-mgmt/apikeys' },
+  { id: 'siliconflow', name: '硅基流动（有免费模型）', base: 'https://api.siliconflow.cn/v1', model: '', keyUrl: 'https://cloud.siliconflow.cn/account/ak' },
+  { id: 'deepseek', name: 'DeepSeek（收费，按用量）', base: 'https://api.deepseek.com', model: 'deepseek-chat', keyUrl: 'https://platform.deepseek.com/api_keys' },
+  { id: 'custom', name: '自定义（OpenAI 兼容接口）', base: '', model: '' }
+];
+let AI = { base: '', model: '', hasKey: false };
+const aiReady = () => !!(window.desktop && AI.hasKey && AI.base && AI.model);
+function needAi() {
+  if (!window.desktop) return toast('AI 功能需要在桌面版里使用');
+  toast('AI 还没设置好，去设置里看看', 3500);
+  go('settings');
+}
+// 一次 AI 请求；onDelta 收到边生成边返回的内容
+let aiSeq = 0;
+const aiListeners = {};
+if (window.desktop) window.desktop.onAiDelta(m => {
+  if (m.waiting) return toast('云端服务器处理中，请稍等一下…', 4000);
+  aiListeners[m.id]?.(m.delta);
+});
+async function aiAsk(messages, onDelta, override) {
+  const id = 'r' + (++aiSeq);
+  if (onDelta) aiListeners[id] = onDelta;
+  try { return await window.desktop.aiChat(messages, id, override); }
+  finally { delete aiListeners[id]; }
+}
+// 大模型自己推算星期几经常算错：直接给一张"上周到下下周"的日期表让它查
+function dateTable(ref) {
+  const mon = addDays(ref, -(dow(ref) - 1)), label = ['上周', '本周', '下周', '下下周'];
+  const rows = [];
+  for (let w = 0; w < 4; w++) {
+    const days = [];
+    for (let d = 0; d < 7; d++) { const x = addDays(mon, (w - 1) * 7 + d); days.push(`周${WD[d + 1]}=${fmt(x)}`); }
+    rows.push(`${label[w]}：${days.join('，')}`);
+  }
+  return rows.join('\n');
+}
+
+/* AI 从一段文字里找日程，返回和本地规则一样格式的候选列表 */
+async function aiExtract(text, ref, what) {
+  const sys = `你帮大学生从${what}里找出需要记到日历上的事项：作业或报告的截止、考试测验、班会、活动、讲座、调课停课补课、集合等。
+参考日期是 ${fmt(ref)}（星期${WD[dow(ref)]}），"明天""后天"按参考日期加天数。"周五""下周三"这类说法不要自己推算，直接查下面的日期表（只说"周五"指本周五，如果本周五已经过去就是下周五）：
+${dateTable(ref)}
+如果聊天记录里有"昵称 2026/10/20 09:12"这样的消息头，那之后的消息以消息头的日期为参考日期，同样按周一到周日算周。
+学校作息：${S.settings.sections.map((s, i) => `第${i + 1}节=${s.split('-')[0]}`).join('，')}。说"第3节"就填第3节的开始时间。"晚上10点"是 22:00。
+只输出一个 JSON 数组，不要任何其他文字。每一项：{"title":"简短的事项，20字以内，不含日期时间；如果这个日期是截止日期，标题以「截止」结尾，如 影像创作活动作品提交截止","when":"原文里说时间的那几个字，原样照抄，如 明天下午3点、周五晚上10点前、下周三上午第3节、11月12日上午9点","ref":"这条消息的参考日期 YYYY-MM-DD","date":"YYYY-MM-DD","time":"HH:MM，没说具体时间就是空字符串","type":"task 或 event","note":"原文里的那句话"}。
+type 按事情的性质分，不要只看有没有"截止"两个字：课程的作业、报告、论文、考试测验（包括它们的截止时间）用 task；活动、比赛、征稿、作品征集评选（即使有"作品提交截止"）、班会、讲座、调课等其他事情用 event。闲聊、推算不出日期的不要；同一件事只出现一次。没有就输出 []。`;
+  const r = await aiAsk([{ role: 'system', content: sys }, { role: 'user', content: text.slice(0, 60000) }]);
+  if (!r.ok) return r;
+  let arr;
+  try { arr = JSON.parse((r.text.match(/\[[\s\S]*\]/) || ['[]'])[0]); } catch (e) { return { ok: false, message: 'AI 这次没整理好，再点一次试试' }; }
+  const isD = s => /^\d{4}-\d{2}-\d{2}$/.test(s || ''), isT = s => /^\d{2}:\d{2}$/.test(s || '');
+  const list = [];
+  for (const x of Array.isArray(arr) ? arr : []) {
+    if (!x || !x.title) continue;
+    // 日期由本地规则从 AI 抄出的原话里算（"下周三"这类大模型常算错），算不出来才用 AI 给的
+    const local = x.when ? extractOne(String(x.when), isD(x.ref) ? parseD(x.ref) : ref) : null;
+    const date = local ? local.date : isD(x.date) ? x.date : '';
+    if (!date) continue;
+    list.push({ title: String(x.title).slice(0, 40), date, time: local && local.time ? local.time : isT(x.time) ? x.time : '',
+      // 类型也由本地规则按原话判断（AI 判断不稳定），原话里没有关键词才用 AI 的
+      type: typeOf(`${x.note || ''} ${x.title}`) || (x.type === 'task' ? 'task' : 'event'), note: String(x.note || '') });
+  }
+  return { ok: true, list };
+}
+
+/* AI 课堂笔记 */
+let aiNoteText = '';
+function mdHtml(s) {
+  const inline = t => t.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\[(\d{1,2}(?::\d{2}){1,2})\]/g, '<span class="ts">[$1]</span>');
+  return esc(s).split('\n').map(l => {
+    let m;
+    if ((m = l.match(/^\s*#{1,6}\s+(.*)/))) return `<h4>${inline(m[1])}</h4>`;
+    if ((m = l.match(/^(\s*)(?:[-*+]|\d+[.、])\s+(.*)/))) return `<div class="li" style="margin-left:${Math.min(m[1].length, 8) * 7}px">${inline(m[2])}</div>`;
+    return l.trim() ? `<p>${inline(l)}</p>` : '';
+  }).join('');
+}
+function showAiNote(text) {
+  aiNoteText = text;
+  $('#aiNoteOut').innerHTML = text ? mdHtml(text) : '<div class="empty">识别完成后点「生成笔记」，AI 会整理出要点、重点概念和老师强调的内容</div>';
+  $('#aiNoteCopy').style.display = text ? '' : 'none';
+  $('#aiNoteBtn').textContent = text ? '重新生成' : '生成笔记';
+}
+$('#aiNoteBtn').onclick = async () => {
+  const t = $('#transcript').value.trim();
+  if (!t) return toast('先识别录音，或者把文字粘贴到左边');
+  if (!aiReady()) return needAi();
+  const sys = `你是大学生的课堂笔记助手。用户给你一节课录音的自动转写，每句前面有录音时间点，里面可能有同音错字。请整理成课堂笔记，用 Markdown，按下面的结构：
+## 本节主题
+一两句话。
+## 要点
+按讲课顺序的分层列表。
+## 重点概念
+"**术语**：解释"的列表。
+## 老师强调
+老师说要考、要记住、很重要的内容，每条后面附时间点，如 [12:30]。
+## 作业与考试
+带上截止时间；没有提到就写"未提到"。
+要求：根据上下文改正明显的识别错误；不要编造录音里没有的内容；简洁，不要客套话。`;
+  $('#aiNoteBtn').disabled = true; $('#aiNoteStop').style.display = ''; $('#aiNoteCopy').style.display = 'none';
+  $('#aiNoteHint').textContent = 'AI 正在整理…';
+  let acc = '';
+  const out = $('#aiNoteOut');
+  out.innerHTML = '<div class="jw-loading"><span class="spin"></span><span>云端服务器处理中，请稍等…</span></div>';
+  const r = await aiAsk([{ role: 'system', content: sys }, { role: 'user', content: t.slice(0, 150000) }], d => {
+    acc += d; out.innerHTML = mdHtml(acc); out.scrollTop = out.scrollHeight;
+  });
+  $('#aiNoteBtn').disabled = false; $('#aiNoteStop').style.display = 'none'; $('#aiNoteHint').textContent = '';
+  if (!r.ok) { showAiNote(aiNoteText); return toast(r.message, 5000); }
+  showAiNote(r.text.trim());
+  out.scrollTop = 0;
+  // 打开的是历史记录：笔记直接存进去
+  const n = S.notes.find(x => x.id === curNoteId);
+  if (n) { n.aiNote = aiNoteText; save(); toast('笔记已生成，已存进这条历史记录'); }
+  else toast('笔记已生成，点左边「保存」可以连同文字一起存下来', 3500);
+};
+$('#aiNoteStop').onclick = () => window.desktop.aiCancel();
+$('#aiNoteCopy').onclick = async () => {
+  try { await navigator.clipboard.writeText(aiNoteText); toast('已复制笔记'); } catch (e) { toast('复制失败'); }
+};
+
+/* AI 设置 */
+$('#aiPreset').innerHTML = AI_PRESETS.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+const curPreset = () => AI_PRESETS.find(p => p.id === $('#aiPreset').value);
+function fillAi() {
+  const p = AI_PRESETS.find(x => x.base && x.base === AI.base) || (AI.base ? AI_PRESETS.at(-1) : AI_PRESETS[0]);
+  $('#aiPreset').value = p.id;
+  $('#aiBase').value = AI.base || p.base;
+  $('#aiModel').value = AI.model || p.model;
+  $('#aiKey').value = '';
+  $('#aiKey').placeholder = AI.builtin ? '不用填，直接用软件内置的免费 Key' : AI.hasKey ? '已保存你自己的 Key（不显示），要换就重新填' : '粘贴你的 API Key';
+  $('#aiState').textContent = !window.desktop ? '网页预览版不能用 AI' : AI.builtin ? 'AI 已就绪 · 正在用软件内置的免费服务，不用设置' : AI.hasKey ? `AI 已就绪 · 正在用你自己的 Key（${curPreset().name.replace(/（.*）/, '')}）` : '这个 AI 服务需要填你自己的 Key';
+  $('.ai-status').classList.toggle('off', !window.desktop || !AI.hasKey);
+  $('#aiClear').textContent = '改回内置 Key';
+  $('#aiClear').style.display = AI.builtin ? 'none' : '';
+  $('#aiGetKey').style.display = curPreset().keyUrl ? '' : 'none';
+}
+$('#aiPreset').onchange = () => {
+  const p = curPreset();
+  if (p.id !== 'custom') { $('#aiBase').value = p.base; $('#aiModel').value = p.model; }
+  $('#aiGetKey').style.display = p.keyUrl ? '' : 'none';
+  if (p.id === 'siliconflow') toast('硅基流动：去控制台的模型广场，挑一个标着「免费」的模型，复制模型名填进来', 5000);
+};
+$('#aiGetKey').onclick = () => { const p = curPreset(); if (p.keyUrl) window.open(p.keyUrl); };
+function aiForm() {
+  const base = $('#aiBase').value.trim().replace(/\/+$/, '').replace(/\/chat\/completions$/, ''), model = $('#aiModel').value.trim(), key = $('#aiKey').value.trim();
+  if (!/^https?:\/\//.test(base)) { toast('接口地址要以 https:// 开头'); return null; }
+  if (!model) { toast('请填写模型名'); return null; }
+  if (key && /bigmodel\.cn/.test(base) && !key.includes('.')) { toast('智谱的 Key 中间应该有一个「.」，看起来没复制完整，请用 Key 旁边的复制按钮再复制一次', 6000); return null; }
+  return { base, model, key };
+}
+$('#aiSave').onclick = async () => {
+  if (!window.desktop) return toast('AI 功能需要在桌面版里使用');
+  const f = aiForm(); if (!f) return;
+  if (!f.key && !/bigmodel\.cn/.test(f.base) && (AI.builtin || !AI.hasKey)) return toast('这个 AI 服务要填你自己的 Key 才能用', 4000);
+  // 换成自己的 Key：强提醒，确认了才保存
+  if (f.key && !(await ask({
+    title: '确定换成你自己的 Key 吗？',
+    body: `换了以后，所有 AI 功能都会改用你填的 Key：<ul>
+      <li><b>费用和额度按你自己的账号算</b>，收费服务会产生费用</li>
+      <li>Key 填错、过期或者额度用完，<b>AI 课堂笔记、AI 识别都会用不了</b></li>
+      <li>建议先点「测试连接」确认能用；以后随时可以点「改回内置 Key」恢复</li></ul>`,
+    yes: '确定更换'
+  }))) return;
+  const r = await window.desktop.aiSet({ base: f.base, model: f.model, ...(f.key ? { key: f.key } : {}) });
+  if (!r.ok) return toast(r.message);
+  AI = await window.desktop.aiGet(); fillAi(); toast('AI 设置已保存');
+};
+$('#aiTest').onclick = async () => {
+  if (!window.desktop) return toast('AI 功能需要在桌面版里使用');
+  const f = aiForm(); if (!f) return;
+  const btn = $('#aiTest'); btn.disabled = true; $('#aiState').textContent = '正在测试…';
+  const r = await aiAsk([{ role: 'user', content: '请只回复四个字：连接成功' }], null, f);
+  btn.disabled = false;
+  $('#aiState').textContent = r.ok ? 'AI 可以正常使用' : '暂时连不上';
+  if (r.ok) toast(AI.hasKey && !f.key && f.base === AI.base && f.model === AI.model ? 'AI 可以正常使用' : 'AI 可以正常使用，记得点「保存 AI 设置」');
+  else toast(r.message, 6000);
+};
+// 删掉自己的 Key、恢复默认的智谱服务，回到用内置的免费 Key
+$('#aiClear').onclick = async () => {
+  if (!window.desktop || AI.builtin) return;
+  if (!(await ask({ title: '改回内置的免费 Key？', body: '会删除你自己保存的 Key，AI 功能改用软件内置的免费服务（智谱 GLM-4.7-Flash）。', yes: '改回内置' }))) return;
+  await window.desktop.aiSet({ base: '', model: '', key: '' });
+  AI = await window.desktop.aiGet(); fillAi(); toast('已改回内置的免费 Key');
+};
+
+/* 重要操作的确认框：await ask({ title, body, yes }) → true / false */
+function ask({ title, body, yes = '确定', no = '取消' }) {
+  return new Promise(res => {
+    $('#askTitle').textContent = title; $('#askBody').innerHTML = body;
+    $('#askYes').textContent = yes; $('#askNo').textContent = no;
+    const done = v => { $('#askDlg').close(); res(v); };
+    $('#askYes').onclick = () => done(true);
+    $('#askNo').onclick = () => done(false);
+    $('#askDlg').oncancel = e => { e.preventDefault(); done(false); };
+    $('#askDlg').showModal();
+    setTimeout(() => $('#askNo').focus(), 30);  // 默认停在"取消"上，防止手快
+  });
+}
+
+/* ========== 设置 ========== */
+// 保存条：个人资料、学期与作息改了还没保存时高亮提醒；离开设置页时自动保存
+let setDirty = false;
+function markDirty(on) {
+  setDirty = on;
+  $('#saveBar').classList.toggle('dirty', on);
+  $('#saveTitle').textContent = on ? '有改动还没保存' : '个人资料、学期与作息';
+  $('#saveHint').textContent = on ? '点右边保存；离开设置页时也会自动保存' : '改完点右边保存；其他设置改了会自动保存';
+}
+$$('#sName, #sTerm, #sWeeks, #sJw, #sSecs').forEach(x => x.addEventListener('input', () => markDirty(true)));
+function fillSettings() {
+  const st = S.settings;
+  markDirty(false);
+  $('#sName').value = st.name || '';
+  const g = givenName(st.jwName);
+  $('#sName').placeholder = g ? `不填就叫你「${g}」` : '比如：小王';
+  $('#sNameHint').textContent = g ? `教务系统里的名字是 ${st.jwName}，没填昵称时只叫名字` : '登录教务系统后，没填昵称时会用你的名字';
+  $('#sTerm').value = st.termStart; $('#sWeeks').value = st.totalWeeks; $('#sJw').value = st.jwUrl;
+  $('#sSecs').value = st.sections.join('\n');
+  applyTheme();
+  fillAi();
+  const R = st.remind;
+  $('#rCourse').value = R.course; $('#rTaskEve').checked = R.taskEve; $('#rTaskEveAt').value = R.taskEveAt;
+  $('#rTaskDay').checked = R.taskDay; $('#rTaskHours').value = R.taskHours; $('#rEvent').value = R.event;
+  if (window.desktop) window.desktop.getPrefs().then(p => {
+    $('#pAuto').checked = p.autostart; $('#pTray').checked = p.tray; $('#pPet').checked = p.pet; $('#pWidget').checked = p.widget;
+    $$('#pPetSize button').forEach(b => b.classList.toggle('on', b.dataset.s === p.petSize));
+  });
+  $$('#pAuto, #pTray, #pPet, #pWidget, #pWidgetEdit, #pPetSize button').forEach(x => x.disabled = !window.desktop);
+  ptShow();
+}
+$$('#themeSeg button').forEach(b => b.onclick = () => { S.settings.theme = b.dataset.t; save(); applyTheme(); });
+// 提醒设置：改了就存
+$$('#rCourse, #rTaskEve, #rTaskEveAt, #rTaskDay, #rTaskHours, #rEvent').forEach(x => x.onchange = () => {
+  const num = (id, lo, hi, def) => { const n = Math.round(+$(id).value); return isNaN(n) ? def : Math.min(hi, Math.max(lo, n)); };
+  S.settings.remind = {
+    course: num('#rCourse', 0, 120, 10), taskEve: $('#rTaskEve').checked, taskEveAt: $('#rTaskEveAt').value || '20:00',
+    taskDay: $('#rTaskDay').checked, taskHours: num('#rTaskHours', 1, 24, 2), event: num('#rEvent', 0, 240, 30)
+  };
+  save(); fillSettings(); toast('提醒设置已保存', 1500);
+});
+$('#rTest').onclick = () => {
+  if (!window.desktop) return toast('提醒需要在桌面版里使用');
+  window.desktop.notify({ title: '这是一条测试提醒', body: '到时间就会像这样在' + (window.desktop.platform === 'darwin' ? '右上角' : '右下角') + '弹出来' });
+};
+$('#pAuto').onchange = () => window.desktop.setPrefs({ autostart: $('#pAuto').checked });
+$('#pTray').onchange = () => window.desktop.setPrefs({ tray: $('#pTray').checked });
+$('#pPet').onchange = () => window.desktop.setPrefs({ pet: $('#pPet').checked });
+$$('#pPetSize button').forEach(b => b.onclick = () => {
+  $$('#pPetSize button').forEach(x => x.classList.toggle('on', x === b));
+  window.desktop.setPrefs({ petSize: b.dataset.s, pet: true });
+  $('#pPet').checked = true;
+});
+$('#pWidget').onchange = () => window.desktop.setPrefs({ widget: $('#pWidget').checked });
+$('#pWidgetEdit').onclick = () => go('widgets');
+
+/* ========== 学校门户「我的日历」同步（多设备） ========== */
+// 自己加的日程、待办同步到学校门户的「我的日历」：存在学校服务器上、跟着学号走，换台电脑登录同一个学号就能拿回来，
+// 在门户网页上加的日程也会同步过来。课程和考试不传（教务系统里本来就有，每台电脑自己同步）。
+// 双向同步：S.portal.base 记着上次同步完每条的样子（门户编号 → 本机指纹 l、门户指纹 r、日期 d），
+// 和这次比较就知道哪边加了、改了、删了；两边都改了以本机为准。日程上的 pid 是门户里的编号。
+// 门户没有"类型""已完成"，写在描述末尾的标记里：[河传答哒:task:done]
+const PT_TAG = /\s*\[河传答哒:(\w+)(:done)?\]\s*$/;
+const ptRange = () => ({ from: fmt(addDays(new Date(), -180)), to: fmt(addDays(new Date(), 365)) });
+const ptSyncable = e => !e.src && e.type !== 'course';
+const evSig = e => JSON.stringify([e.title, e.date, e.start || '', e.end || '', e.type, !!e.done, e.note || '']);
+const ptKey = e => [e.title.slice(0, 200).trim(), e.date, e.start || ''].join('|');
+const pidOf = x => String(x.pkid || x.id || '');
+function toPortal(e) {
+  const tag = e.type !== 'event' || e.done ? `[河传答哒:${e.type}${e.done ? ':done' : ''}]` : '';
+  const note = (e.note || '').slice(0, 400 - tag.length - 1);
+  const f = { subject: e.title.slice(0, 200).trim(), startdate: e.date, enddate: e.date, address: e.place || '无', description: [note, tag].filter(Boolean).join('\n') };
+  // 没有开始时间 = 全天；没有结束时间就让结束 = 开始（门户必须填结束时间）
+  if (!e.start) return { ...f, wholeday: '1', starttime: '00:00', endtime: '23:59', duration: '' };
+  return { ...f, wholeday: '0', starttime: e.start, endtime: e.end && e.end > e.start ? e.end : e.start, duration: '5' };
+}
+function fromPortal(x) {
+  const desc = String(x.description || ''), m = desc.match(PT_TAG), addr = String(x.address || '').trim();
+  let note = (m ? desc.slice(0, m.index) : desc).trim();
+  if (addr && addr !== '无' && !note.includes(addr)) note = `地点：${addr}` + (note ? '\n' + note : '');
+  const date = String(x.startdate || '').slice(0, 10), whole = String(x.wholeday) === '1' || !x.starttime;
+  const start = whole ? '' : String(x.starttime).slice(0, 5);
+  const end = whole || String(x.enddate || date).slice(0, 10) !== date ? '' : String(x.endtime || '').slice(0, 5);
+  return { title: String(x.subject || '').trim() || '（无标题）', date, start, end: end > start ? end : '',
+    type: m && ['task', 'event', 'other'].includes(m[1]) ? m[1] : 'event', note, done: !!(m && m[2]), place: addr !== '无' ? addr : '' };
+}
+let ptBusy = false, ptAgain = false, ptTimer = 0, ptLastSig = '';
+const ptSig = () => JSON.stringify(S.events.filter(ptSyncable).map(e => [e.id, e.pid || '', evSig(e)]));
+// 数据存了：日程有变化就过几秒自动同步（save() 里调用）
+function ptSchedule() {
+  if (!window.desktop || !S.portal?.on) return;
+  if (ptBusy) { ptAgain = true; return; }
+  clearTimeout(ptTimer);
+  ptTimer = setTimeout(() => { if (ptSig() !== ptLastSig) portalSync(); }, 5000);
+}
+function ptShow(busy) {
+  const P = S.portal || {}, on = !!(window.desktop && P.on);
+  const t = busy ? '正在和门户同步…' : P.err ? '同步失败' : syncText(P.at);
+  $('#ptAt').textContent = on || P.at ? (busy || !P.err ? t : '同步失败：' + P.err) : '';
+  $('#calSyncAt').textContent = t; $('#calSyncAt').title = P.err || '';
+  $('#calSyncAt').style.display = $('#calSync').style.display = on ? '' : 'none';
+  $('#calSync').disabled = $('#ptNow').disabled = !!busy || !window.desktop;
+  $('#ptOn').checked = !!P.on; $('#ptOn').disabled = !window.desktop;
+}
+async function portalSync(manual) {
+  if (!window.desktop || ptBusy) return;
+  ptBusy = true; ptAgain = false; clearTimeout(ptTimer); ptShow(true);
+  const D = window.desktop, P = S.portal || (S.portal = { on: true }), base = P.base || (P.base = {});
+  const call = async (op, arg) => { const r = await D.portalCall(op, arg); if (!r.ok) throw new Error(r.message); return r.data; };
+  const { from, to } = ptRange(), inRange = d => d >= from && d <= to;
+  // 只要自己建的（flag 1）；别人安排给你的会议之类不动
+  const fetchRemote = async () => new Map((await call('list', { from, to })).filter(x => pidOf(x) && (x.flag == null || String(x.flag) === '1')).map(x => [pidOf(x), x]));
+  const add = [], upd = [], del = [];
+  let got = 0, gone = 0, err = null;
+  try {
+    const b = await D.portalBegin();
+    if (!b.ok) throw new Error(b.message);
+    let remote = await fetchRemote();
+    if (!remote.size && Object.keys(base).length > 2) throw new Error('门户返回的日程是空的，这次先不同步，免得误删');
+    // ---- 比较（这一段不 await，中途不会有别的改动插进来）----
+    const mine = S.events.filter(ptSyncable), byPid = new Map(mine.filter(e => e.pid).map(e => [e.pid, e]));
+    // 还没配上的本机日程：门户上已经有一模一样的（比如上次同步到一半断了）就直接认领，不重复加
+    const free = new Map();
+    for (const [pid, x] of remote) if (!byPid.has(pid) && !base[pid]) { const k = ptKey(fromPortal(x)); if (!free.has(k)) free.set(k, pid); }
+    for (const e of mine) if (!e.pid && inRange(e.date) && free.has(ptKey(e))) { e.pid = free.get(ptKey(e)); free.delete(ptKey(e)); byPid.set(e.pid, e); }
+    for (const [pid, x] of remote) {
+      const r = fromPortal(x), was = base[pid], e = byPid.get(pid);
+      if (!e) {
+        if (was) del.push(pid);  // 本机删掉了 → 门户上也删
+        else { S.events.push({ id: uid(), pid, ...r, ...(r.done ? { doneAt: Date.now() } : {}) }); got++; }  // 别的电脑或门户网页上加的
+      } else if (!was || evSig(e) !== was.l) upd.push(e);  // 本机改了（两边都改了也以本机为准）
+      else if (evSig(r) !== was.r) { Object.assign(e, r); if (r.done && !e.doneAt) e.doneAt = Date.now(); got++; }  // 门户上改了
+    }
+    S.events = S.events.filter(e => {
+      if (!ptSyncable(e) || !inRange(e.date)) return true;
+      if (!e.pid) { add.push(e); return true; }
+      if (remote.has(e.pid)) return true;
+      const was = base[e.pid];
+      if (was && evSig(e) === was.l && inRange(was.d)) { delete base[e.pid]; gone++; return false; }  // 门户上删了、本机没再改 → 跟着删
+      delete e.pid; add.push(e); return true;  // 门户上删了但本机改过 → 重新加上去
+    });
+    // 记下这一刻每条的样子：同步途中用户又改了，下次还能看出来
+    const snap = S.events.filter(ptSyncable).map(e => [e, evSig(e)]);
+    // ---- 推上去 ----
+    try {
+      for (const e of upd) await call('update', { ...toPortal(e), pkid: e.pid, flag: '1' });
+      for (const pid of del) { await call('del', { pkid: pid, flag: 1 }); delete base[pid]; }
+      for (const e of add) { const r = await call('add', toPortal(e)); const id = r && (r.pkid || r.id); if (id) e.pid = String(id); }
+    } catch (x) { err = x; }
+    // ---- 再取一遍：给新加的配上门户编号，记下同步完的样子 ----
+    if (add.length || upd.length || del.length) remote = await fetchRemote();
+    const taken = new Set(S.events.map(e => e.pid).filter(Boolean));
+    for (const e of add) if (!e.pid) for (const [pid, x] of remote) if (!taken.has(pid) && ptKey(fromPortal(x)) === ptKey(e)) { e.pid = pid; taken.add(pid); break; }
+    for (const [e, sig] of snap) if (e.pid && remote.has(e.pid)) base[e.pid] = { l: sig, r: evSig(fromPortal(remote.get(e.pid))), d: e.date };
+    for (const pid in base) if (!remote.has(pid) && inRange(base[pid].d) && !taken.has(pid)) delete base[pid];
+    if (err) throw err;
+    P.at = Date.now(); delete P.err;
+  } catch (x) {
+    err = x; P.err = String(x.message || x);
+  }
+  D.portalEnd();
+  ptLastSig = ptSig();
+  ptBusy = false;
+  save(); renderAll(); ptShow();
+  const n = add.length + upd.length;
+  const parts = [n && `上传 ${n} 条`, got && `收到 ${got} 条`, (del.length + gone) && `删除 ${del.length + gone} 条`].filter(Boolean);
+  if (err) { if (manual) toast('和门户同步失败：' + P.err, 5000); }
+  else if (manual) toast(parts.length ? '和学校门户同步好了：' + parts.join('、') : '和学校门户同步好了，没有变化', 3000);
+  else if (got || gone) toast('从学校门户同步来了新的日程：' + parts.join('、'), 3500);
+  if (ptAgain) ptSchedule();
+}
+$('#ptOn').onchange = () => {
+  S.portal = { ...(S.portal || {}), on: $('#ptOn').checked };
+  save(); ptShow();
+  if (S.portal.on) portalSync(true);
+};
+$('#ptNow').onclick = $('#calSync').onclick = () => portalSync(true);
+// 别的电脑上改的：每 15 分钟看一次
+setInterval(() => { if (S.portal?.on) portalSync(); }, 15 * 60e3);
+
+/* ========== 提醒：每 30 秒看一次，到点让桌面版弹 Windows 通知 ========== */
+// 每条提醒只弹一次（记在 S.fired 里）。到了提醒时间、事情还没开始/没截止（until）就弹：
+// 比如上课前 5 分钟才开机、截止前 1 小时才加的作业，也会马上补一次；事情已经过去了就不弹
+function checkReminders() {
+  if (!window.desktop) return;
+  const R = S.settings.remind, now = Date.now(), fired = S.fired || (S.fired = {});
+  let changed = false;
+  const at = (ds, hm) => { const d = parseD(ds), [h, m] = (hm || '00:00').split(':').map(Number); d.setHours(h, m, 0, 0); return +d; };
+  const fire = (key, t, title, body, until) => {
+    if (fired[key] || now < t || now >= until) return;
+    fired[key] = now; changed = true;
+    window.desktop.notify({ title, body });
+  };
+  const today = todayStr(), tomorrow = fmt(addDays(new Date(), 1));
+  // "还有多久"按实际剩下的时间说（补弹时不会说错）
+  const left = t => { const m = Math.max(1, Math.round((t - now) / 60e3)); return m < 60 ? `${m} 分钟` : `${Math.round(m / 6) / 10} 小时`.replace('.0 ', ' '); };
+  if (R.course > 0) for (const i of itemsFor(today)) if (i.kind === 'course' && i.start) {
+    const st = at(today, i.start);
+    fire(`c:${i.id}:${today}`, st - R.course * 60e3, `${left(st)}后上课：${i.title}`, `${i.start} 开始` + (i.room ? ` · ${i.room}` : ''), st);
+  }
+  for (const e of S.events) {
+    if (e.date !== today && e.date !== tomorrow) continue;
+    const note = e.note ? ' · ' + e.note.slice(0, 40) : '';
+    if (e.type === 'task') {
+      if (e.done) continue;
+      const ex = isExam(e), due = dueMs(e), nm = e.title.replace(/^考试[：:]\s*/, '');
+      if (R.taskEve && e.date === tomorrow)
+        fire(`te:${e.id}:${e.date}`, at(today, R.taskEveAt), `${ex ? '明天考试' : '明天截止'}：${nm}`, (e.start ? `明天 ${e.start}${ex ? ' 开始' : ' 截止'}` : '明天') + note, at(tomorrow, '00:00'));
+      if (R.taskDay && e.date === today)
+        fire(`td:${e.id}:${e.date}`, e.start ? due - R.taskHours * 3600e3 : at(today, '08:00'),
+          e.start ? `${ex ? `${left(due)}后考试` : `还有 ${left(due)}截止`}：${nm}` : `${ex ? '今天考试' : '今天截止'}：${nm}`,
+          (e.start ? `今天 ${e.start}${ex ? ' 开始' : ' 截止'}` : '今天之内要完成') + note, due);
+    } else if (R.event > 0 && e.start && e.date === today) {
+      const st = at(today, e.start);
+      fire(`ev:${e.id}:${e.date}`, st - R.event * 60e3, `${left(st)}后：${e.title}`, `${e.start} 开始` + note, st);
+    }
+  }
+  for (const k in fired) if (now - fired[k] > 3 * 864e5) { delete fired[k]; changed = true; }
+  if (changed) save();
+}
+function saveSettings(auto) {
+  const secs = $('#sSecs').value.split('\n').map(s => s.trim().replace(/\s/g, '').replace('~', '-')).filter(s => /^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/.test(s));
+  if (!secs.length) { toast('每节课时间格式不对，例如 08:00-08:45'); return false; }
+  Object.assign(S.settings, {
+    name: $('#sName').value.trim(),
+    termStart: $('#sTerm').value || S.settings.termStart, totalWeeks: Math.max(1, +$('#sWeeks').value || 18),
+    jwUrl: $('#sJw').value.trim(), sections: secs
+  });
+  save(); markDirty(false); renderMe(); renderAll(); fillSettings();
+  toast(auto ? '设置的改动已自动保存' : '设置已保存');
+  return true;
+}
+$('#saveSet').onclick = () => saveSettings(false);
+$('#jwLogout').onclick = async () => {
+  if (!window.desktop) return toast('网页预览版没有登录状态');
+  if (!confirm('退出教务系统登录，并删除保存的学号和密码？\n（已经导入的课表不会删除）')) return;
+  await window.desktop.jwLogout();
+  toast('已退出登录，保存的学号和密码也删除了');
+};
+$('#exportData').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' }));
+  a.download = `河传答哒备份-${todayStr()}.json`; a.click();
+};
+$('#importBtn').onclick = () => $('#importFile').click();
+$('#importFile').onchange = async () => {
+  const f = $('#importFile').files[0]; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    S = { ...defaults(), ...d, settings: { ...defaults().settings, ...d.settings } };
+    S.settings.remind = { ...defaults().settings.remind, ...(S.settings.remind || {}) };
+    save(); fillSettings(); renderMe(); renderAll(); toast('备份已导入');
+  } catch (e) { toast('备份文件读取失败'); }
+};
+$('#resetData').onclick = () => {
+  if (!confirm('清空课表、日程、笔记和设置？此操作不能撤销')) return;
+  S = defaults(); save(); fillSettings(); renderMe(); renderAll(); toast('已清空');
+};
+
+/* ========== 欢迎 ========== */
+// 第一次打开：登录教务系统 → "正在为你定制"（同步课表、考试、成绩，读出名字）→ "你好，小明"
+// 登不上或不想登，可以先手动填称呼
+function wShow(p) { $$('#welcome .wl-pane').forEach(x => x.classList.toggle('on', x.dataset.p === p)); }
+function wSetCaptcha(st) {
+  const need = !!(st && st.needCode && st.img);
+  $('#welcome .wl-code').style.display = need ? '' : 'none';
+  if (need) $('#wCaptcha').src = st.img;
+  $('#wCode').value = '';
+}
+const wNeedCode = () => $('#welcome .wl-code').style.display !== 'none';
+let wReady = false;  // 学校的登录页已经在后台打开好了
+async function wPrepare() {
+  const st = await window.desktop.jwLoginStart();
+  if (st.ok && !st.loggedIn) { wReady = true; wSetCaptcha(st); }
+  return st;
+}
+async function welcomeOpen() {
+  wShow('login');
+  $('#welcome').showModal();
+  if (!window.desktop) return wShow('manual');  // 网页预览版不能登录
+  const cred = await window.desktop.credGet();
+  $('#wUser').value = cred.user; $('#wPass').value = cred.pass;
+  ($('#wUser').value ? $('#wPass') : $('#wUser')).focus();
+  const st = await wPrepare();
+  if (!st.ok) $('#wErr').textContent = st.message;
+}
+// 转圈时下面的小字一步步换（登录和读取是一次请求，按大概的时间换字）
+let wStepTimer = null;
+function wLoading(on) {
+  clearInterval(wStepTimer);
+  if (!on) return;
+  const steps = ['正在登录统一身份认证', '正在读取你的课表', '正在同步考试安排和成绩', '正在整理你的日历', '马上就好'];
+  let i = 0;
+  $('#wStep').textContent = steps[0];
+  wShow('loading');
+  wStepTimer = setInterval(() => {
+    if (i >= steps.length - 1) return;
+    i++; $('#wStep').style.opacity = 0;
+    setTimeout(() => { $('#wStep').textContent = steps[i]; $('#wStep').style.opacity = 1; }, 250);
+  }, 2200);
+}
+async function welcomeLogin() {
+  const user = $('#wUser').value.trim(), pass = $('#wPass').value, code = $('#wCode').value.trim();
+  if (!user) { $('#wErr').textContent = '请填写学号'; return $('#wUser').focus(); }
+  if (!pass) { $('#wErr').textContent = '请填写密码'; return $('#wPass').focus(); }
+  if (wNeedCode() && !code) { $('#wErr').textContent = '请填写验证码：就是右边图片里的字，看不清可以点图片换一张'; return $('#wCode').focus(); }
+  $('#wErr').textContent = '';
+  wLoading(true);
+  const t0 = Date.now();
+  let res = null;
+  if (!wReady) {  // 打开时没连上学校（比如刚连网）：这里再试一次
+    const st = await wPrepare();
+    if (!st.ok || st.loggedIn) res = st;
+    else if (wNeedCode()) { wLoading(false); wShow('login'); $('#wErr').textContent = '这次需要填验证码'; return $('#wCode').focus(); }
+  }
+  if (!res) res = await window.desktop.jwLoginSubmit({ user, pass, code: wNeedCode() ? code : '' });
+  await new Promise(r => setTimeout(r, Math.max(0, 2600 - (Date.now() - t0))));  // 太快的话也让动画转一会儿
+  wLoading(false);
+  if (!res.ok) {
+    wShow('login');
+    wReady = false;
+    let msg = res.message || '登录失败';
+    if (/验证码/.test(msg)) msg = '验证码不对，已经换了一张新的，请重新填写';
+    else if (/密码|用户名|账号|不存在|不正确/.test(msg)) msg += '。请检查学号和密码（忘了密码可以在学校门户找回）';
+    if ('needCode' in res) { wSetCaptcha(res); wReady = true; } else wPrepare();
+    $('#wErr').textContent = msg;
+    return (wNeedCode() ? $('#wCode') : $('#wPass')).focus();
+  }
+  await window.desktop.credSet({ user, pass, remember: $('#wRemember').checked });
+  welcomeFinish(res.data);
+}
+function welcomeFinish(d) {
+  const list = coursesFromJw(d);
+  if (list.length) applyJw(d, list);
+  const extra = applyJwExtras(d);
+  S.settings.welcomed = true;
+  save(); viewWeek = termWeek(new Date()); renderMe(); renderAll(); fillSettings();
+  const g = givenName(S.settings.jwName);
+  $('#wHello').textContent = g ? `你好，${g}` : '你好，欢迎你';
+  const nCourse = new Set(list.map(c => c.name)).size;
+  const got = [nCourse && `${nCourse} 门课`, ...extra.filter(s => !/^0 /.test(s))].filter(Boolean);
+  $('#wSum').innerHTML = (got.length ? `已经帮你导入了 ${got.join('、')}` : '教务系统里这个学期还没有课表') + '<br>以后点「导入课表」或「从教务系统同步」就能更新';
+  wShow('done');
+  setTimeout(() => $('#wStart').focus(), 50);
+}
+// 手动填称呼（不登录）
+function welcomeDone() {
+  S.settings.name = $('#wName').value.trim();
+  S.settings.welcomed = true;
+  save(); renderMe(); renderHome(); fillSettings();
+  $('#welcome').close();
+  if (window.desktop) window.desktop.jwLoginCancel();
+  maybePinGuide();
+}
+$('#wLogin').onclick = welcomeLogin;
+['wUser', 'wPass', 'wCode'].forEach(id => $('#' + id).onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) welcomeLogin(); });
+$('#wCaptcha').onclick = async () => wSetCaptcha(await window.desktop.jwCaptcha());
+$('#wSkip').onclick = () => { wShow('manual'); setTimeout(() => $('#wName').focus(), 50); };
+$('#wBack').onclick = () => wShow('login');
+$('#wStart').onclick = () => { $('#welcome').close(); maybePinGuide(); };
+// 安装时勾了"固定到任务栏"：第一次打开显示图示
+async function maybePinGuide() {
+  if (window.desktop && window.desktop.pinGuide && await window.desktop.pinGuide()) $('#pinDlg').showModal();
+}
+$('#pinOk').onclick = () => $('#pinDlg').close();
+$('#wGo').onclick = welcomeDone;
+$('#wName').onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) welcomeDone(); };
+$('#welcome').oncancel = e => e.preventDefault();
+
+/* ========== 启动 ========== */
+let S = load();
+if (!S) { S = defaults(); save(); }
+// 旧版本放的示例课程和示例日程不要了
+S.courses = S.courses.filter(c => c.teacher !== '示例老师');
+S.events = S.events.filter(e => !/^示例：/.test(e.title));
+document.body.classList.toggle('side-off', !!S.settings.sideOff);
+// 旧版本保存过的云端 AI 配置（含 Key）不再使用，清掉
+for (const k of ['apiBase', 'apiKey', 'chatModel', 'asrBase', 'asrKey', 'asrModel']) delete S.settings[k];
+// 旧的默认地址是学校官网首页，换成学校门户（个人中心）
+if (!S.settings.jwUrl || S.settings.jwUrl === 'https://www.hebic.cn/') S.settings.jwUrl = 'https://portal.hebic.cn/personal-center';
+applyTheme();
+renderMe();
+// 首次定位底色块时不要动画
+$('#navPill').style.transition = 'none'; movePill();
+requestAnimationFrame(() => requestAnimationFrame(() => $('#navPill').style.transition = ''));
+$('#modeHint').textContent = window.desktop ? '' : '当前是网页预览版，录课识别、教务同步和提醒需要在桌面版里使用';
+$('#refDate').value = todayStr();
+sel = autoSel();
+viewWeek = defaultWeek();
+save();  // 开了门户同步的话，这里会在几秒后自动同步一次
+renderAll();
+ptShow();
+if (window.desktop) window.desktop.aiGet().then(c => { AI = c; if (curView === 'settings') fillAi(); });
+// 每分钟刷新首页（"正在上课"、过了零点换天）；每 30 秒检查提醒
+let lastDay = todayStr();
+setInterval(() => {
+  if (todayStr() !== lastDay) { lastDay = todayStr(); selAuto = true; cur = new Date(); cur.setDate(1); }
+  if (selAuto) sel = autoSel();  // 今天最后一件事结束后，自动换成显示明天
+  if (curView === 'home') renderHome();
+  else if (curView === 'calendar') renderCalendar();
+  else if (curView === 'courses') renderCourses();  // 课程表上的"现在"时间线跟着走
+}, 60000);
+checkReminders();
+setInterval(checkReminders, 30000);
+if (!S.settings.welcomed) welcomeOpen();
+else maybePinGuide();
+</script>
+</body>
+</html>
