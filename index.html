@@ -124,7 +124,11 @@ body.ready .title span{animation:letter 1.2s calc(.25s + var(--i) * .11s) var(--
 .bs-alt small{font-size:11px;font-weight:500;opacity:.65}
 .bs-alt:hover{background:rgba(26,15,8,.03)}
 .btn-split.full{display:flex;width:100%}
-.btn-split.full .bs-main{flex:1;justify-content:center;padding:0 16px}
+.btn-split.full .bs-main{flex:1;min-width:0;justify-content:center;padding:0 12px;gap:8px;font-size:16px}
+.btn-split.full .bs-alt{flex:none;padding:0 13px}
+/* Mac 卡片：每种芯片一行，上面一行小字写是哪种芯片 */
+.chip-l{font-size:12.5px;color:var(--muted);margin:0 0 8px 4px}
+.btn-split + .chip-l{margin-top:16px}
 .btn-ghost{color:var(--ink);border:1px solid var(--line2);background:rgba(255,244,230,.04);backdrop-filter:blur(10px)}
 .btn-ghost:hover{background:rgba(255,244,230,.09)}
 .btn-ghost .pl{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg)}
@@ -734,7 +738,7 @@ footer nav a:hover{color:var(--ink2)}
     <p class="slogan hero-fade" style="--d:0">河北传媒学院同学的桌面助手<br>课表、日程、录课、作业 —— <em>一个地方，全都管好</em></p>
     <div class="cta hero-fade" style="--d:1">
       <div class="btn-split mag">
-        <a class="bs-main" data-dl="pan" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载<small>Windows 版</small></a>
+        <a class="bs-main" data-dl="pan" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载（推荐）<small>Windows 版</small></a>
         <a class="bs-alt" data-dl="windows" href="#download">GitHub 下载<small>备用线路</small></a>
       </div>
       <a class="btn btn-ghost mag" href="#film"><span class="pl"><svg><use href="#i-play"/></svg></span>看 32 秒宣传片</a>
@@ -1072,7 +1076,7 @@ footer nav a:hover{color:var(--ink2)}
         </ul>
         <div class="go">
           <div class="btn-split full">
-            <a class="bs-main" data-dl="pan" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载</a>
+            <a class="bs-main" data-dl="pan" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载（推荐）</a>
             <a class="bs-alt" data-dl="windows" href="#download">GitHub<small>备用线路</small></a>
           </div>
           <div class="ver">版本 1.3.1 · 安装包 .exe · 约 262 MB</div>
@@ -1089,9 +1093,15 @@ footer nav a:hover{color:var(--ink2)}
           <li><svg><use href="#i-check"/></svg>开机自启、菜单栏常驻、到点通知</li>
         </ul>
         <div class="go">
+          <div class="chip-l">Apple 芯片（M1 / M2 / M3 / M4）</div>
           <div class="btn-split full">
-            <a class="bs-main" data-dl="mac" href="#download"><svg><use href="#i-apple"/></svg>Apple 芯片</a>
-            <a class="bs-alt" data-dl="macIntel" href="#download">Intel<small>老款 Mac</small></a>
+            <a class="bs-main" data-dl="panMac" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载（推荐）</a>
+            <a class="bs-alt" data-dl="mac" href="#download">GitHub<small>备用线路</small></a>
+          </div>
+          <div class="chip-l">Intel 芯片（老款 Mac）</div>
+          <div class="btn-split full">
+            <a class="bs-main" data-dl="panMacIntel" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载（推荐）</a>
+            <a class="bs-alt" data-dl="macIntel" href="#download">GitHub<small>备用线路</small></a>
           </div>
           <div class="ver">版本 1.3.1 · .dmg · 第一次打开看下方常见问题</div>
         </div>
@@ -1126,7 +1136,7 @@ footer nav a:hover{color:var(--ink2)}
     <h2 class="h2" data-r>让大学生活，<br><span class="gr">井井有条</span></h2>
     <div class="cta" data-r style="--d:1">
       <div class="btn-split mag">
-        <a class="bs-main" data-dl="pan" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载<small>v1.3.1</small></a>
+        <a class="bs-main" data-dl="pan" href="#download"><svg><use href="#i-bolt"/></svg>网盘高速下载（推荐）<small>v1.3.1</small></a>
         <a class="bs-alt" data-dl="windows" href="#download">GitHub 下载<small>备用线路</small></a>
       </div>
     </div>
@@ -1147,6 +1157,8 @@ footer nav a:hover{color:var(--ink2)}
    ================================================================ */
 const DOWNLOAD = {
   pan: 'https://1833332470.share.123pan.cn/123pan/CsXhTd-wHPmd',  // 网盘高速下载（123 云盘）
+  panMac: 'https://1833332470.share.123pan.cn/123pan/CsXhTd-vLNmd',  // Mac · Apple 芯片 网盘
+  panMacIntel: 'https://1833332470.share.123pan.cn/123pan/CsXhTd-dLNmd',  // Mac · Intel 网盘
   windows: 'https://github.com/ahuocheng/hechuan-dada/releases/download/v1.3.1/campus-assistant-setup-1.3.1.exe',  // GitHub 备用线路
   mac: 'https://github.com/ahuocheng/hechuan-dada/releases/download/v1.3.1/campus-assistant-1.3.1-mac-arm64.dmg',  // Mac · Apple 芯片
   macIntel: 'https://github.com/ahuocheng/hechuan-dada/releases/download/v1.3.1/campus-assistant-1.3.1-mac-x64.dmg'  // Mac · Intel
@@ -1174,9 +1186,9 @@ function toast(msg) {
 if (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints < 2) {
   $$('.btn-split').filter(b => !b.closest('#download')).forEach(b => {
     const [main, alt] = b.querySelectorAll('a');
-    main.dataset.dl = 'mac';
-    main.innerHTML = '<svg><use href="#i-apple"/></svg>下载 Mac 版<small>Apple 芯片</small>';
-    alt.dataset.dl = 'macIntel';
+    main.dataset.dl = 'panMac';
+    main.innerHTML = '<svg><use href="#i-apple"/></svg>网盘高速下载（推荐）<small>Mac · Apple 芯片</small>';
+    alt.dataset.dl = 'panMacIntel';
     alt.innerHTML = 'Intel 版<small>老款 Mac</small>';
   });
 }
@@ -1184,9 +1196,10 @@ $$('[data-dl]').forEach(a => {
   const url = DOWNLOAD[a.dataset.dl];
   if (url) a.href = url;
   // 网盘是分享页，新标签页打开；GitHub 是直接下载
-  if (url && a.dataset.dl === 'pan') { a.target = '_blank'; a.rel = 'noopener'; }
+  const pan = a.dataset.dl.startsWith('pan');
+  if (url && pan) { a.target = '_blank'; a.rel = 'noopener'; }
   a.addEventListener('click', e => {
-    if (DOWNLOAD[a.dataset.dl]) { toast(a.dataset.dl === 'pan' ? '正在打开 123 云盘…' : '开始下载河传答哒 ' + DL_NAME[a.dataset.dl] + '…'); return; }
+    if (DOWNLOAD[a.dataset.dl]) { toast(pan ? '正在打开 123 云盘…' : '开始下载河传答哒 ' + DL_NAME[a.dataset.dl] + '…'); return; }
     // 还没有链接：首屏按钮滚到下载区，下载区按钮给提示
     if (a.closest('#download')) { e.preventDefault(); toast('下载链接马上就来，稍后再试一下～'); }
   });
